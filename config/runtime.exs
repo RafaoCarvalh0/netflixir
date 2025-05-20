@@ -54,13 +54,14 @@ if config_env() == :prod do
   config :netflixir, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :netflixir, NetflixirWeb.Endpoint,
-    url: [host: System.get_env("PHX_HOST") || "localhost", port: 443, scheme: "https"],
+    url: [host: System.get_env("PHX_HOST") || "localhost", scheme: "https", port: 443],
     http: [
       port: String.to_integer(System.get_env("PORT") || "4000"),
       transport_options: [socket_opts: [:inet6]]
     ],
     secret_key_base: System.get_env("SECRET_KEY_BASE"),
-    server: true
+    server: true,
+    check_origin: false
 
   # ## SSL Support
   #
