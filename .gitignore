@@ -35,6 +35,9 @@ netflixir-*.tar
 npm-debug.log
 /assets/node_modules/
 
-# Ignore processed videos.
-priv/static/videos/processed/
+# Ignore transcoded videos.
+priv/static/videos/transcoded/
+
+# Ignore processed resolutions.
+priv/static/videos/resolutions/
 
