@@ -23,10 +23,13 @@ defmodule Netflixir.Videos.Processors.Transcoder do
   with the highest compatibility across devices and browsers. The output
   format will be MP4 with settings optimized for web streaming.
 
+  It also adds the intro to the video.
   """
   alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.FfmpegUtils
 
   @transcoded_videos_path "priv/static/videos/transcoded"
+  @intro_file "priv/static/videos/intro/intro.mp4"
 
   # TODO: Remove the example default value for raw_file_path once everything
   # is working.
@@ -35,7 +38,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     output_file_path = generate_transcoded_file_path(raw_file_path)
 
     with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(@transcoded_videos_path),
-         {:ok, processed_video_path} <- transcode_with_ffmpeg(raw_file_path, output_file_path) do
+         {:ok, processed_video_path} <- transcode_with_intro(raw_file_path, output_file_path) do
       {:ok, processed_video_path}
     else
       {:error, reason} ->
@@ -53,19 +56,65 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     "#{@transcoded_videos_path}/#{output_file_base_name}"
   end
 
-  defp transcode_with_ffmpeg(raw_file_path, output_path) do
-    args = build_ffmpeg_transcoding_args(raw_file_path, output_path)
-
-    case System.cmd("ffmpeg", args, stderr_to_stdout: true) do
-      {_, 0} -> {:ok, output_path}
-      {error, _} -> {:error, error}
+  defp transcode_with_intro(raw_file_path, output_path) do
+    raw_file_path
+    |> build_ffmpeg_transcoding_args(output_path)
+    |> FfmpegUtils.run_ffmpeg()
+    |> case do
+      {:ok, :success} -> {:ok, output_path}
+      error -> error
     end
   end
 
   defp build_ffmpeg_transcoding_args(raw_file_path, output_path) do
+    force_overwrite = "-y"
+
     h264_codec_ffmpeg_lib = "libx264"
 
-    input_file = ["-i", raw_file_path]
+    input_files = [
+      "-i",
+      @intro_file,
+      "-i",
+      raw_file_path
+    ]
+
+    # Filter Complex: Video/audio processing pipeline
+    # [0:v] - First input (intro) video stream
+    # [1:v] - Second input (main video) video stream
+    # [0:a] - First input audio stream
+    # [1:a] - Second input audio stream
+    #
+    # For each video:
+    # 1. scale=640:360 - Resize to 360p
+    # 2. force_original_aspect_ratio=decrease - Maintain original aspect ratio
+    # 3. pad=640:360:(ow-iw)/2:(oh-ih)/2 - Center with black bars if needed
+    #
+    # Concatenation:
+    # [v0][0:a][v1][1:a] - Takes streams in order: video1, audio1, video2, audio2
+    # concat=n=2:v=1:a=1 - Concatenates 2 inputs, generating 1 video and 1 audio
+    # [outv][outa] - Names output streams as 'outv' and 'outa'
+    filter_complex = [
+      "-filter_complex",
+      "[0:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2[v0];
+       [1:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2[v1];
+       [v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]"
+    ]
+
+    # Output Mapping: Defines which streams to use in the final file
+    # -map "[outv]" - Uses the processed video stream (after scale and concat)
+    # -map "[outa]" - Uses the processed audio stream (after concat)
+    #
+    # This is necessary because:
+    # 1. We have multiple input streams (2 videos, 2 audios)
+    # 2. We process them in the filter_complex
+    # 3. We need to tell FFmpeg exactly which streams to use in the output
+    output_map = [
+      "-map",
+      "[outv]",
+      "-map",
+      "[outa]"
+    ]
+
     video_codec = ["-c:v", h264_codec_ffmpeg_lib]
 
     # AAC has better quality, compatibility, compression and efficiency than MP3
@@ -82,10 +131,13 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     preset = ["-preset", "slow"]
 
     List.flatten([
-      input_file,
+      force_overwrite,
+      input_files,
+      filter_complex,
+      output_map,
       video_codec,
-      audio_codec,
       video_bitrate,
+      audio_codec,
       audio_bitrate,
       preset,
       output_path
