@@ -1,51 +1,50 @@
+// Video player hook with quality selection support
 const VideoPlayer = {
     mounted() {
-        this.initializePlayer();
-    },
-    updated() {
-        this.initializePlayer();
-    },
-    initializePlayer() {
         const video = this.el;
-        const videoSrc = video.dataset.src;
 
+        // Initialize HLS if supported
         if (Hls.isSupported()) {
-            const hls = new Hls({
-                debug: true,
-                enableWorker: true,
-                startLevel: -1,
-            });
-
-            hls.loadSource(videoSrc);
+            const hls = new Hls();
+            hls.loadSource(video.dataset.src);
             hls.attachMedia(video);
 
-            hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                console.log('HLS manifest parsed, trying to play...');
-                video.play().catch(function (error) {
-                    console.log("Play failed:", error);
-                });
-            });
+            // Store HLS instance for cleanup
+            this.hls = hls;
 
-            hls.on(Hls.Events.ERROR, function (event, data) {
-                console.log('HLS error:', data);
-                if (data.fatal) {
-                    switch (data.type) {
-                        case Hls.ErrorTypes.NETWORK_ERROR:
-                            hls.startLoad();
-                            break;
-                        case Hls.ErrorTypes.MEDIA_ERROR:
-                            hls.recoverMediaError();
-                            break;
-                        default:
-                            hls.destroy();
-                            break;
-                    }
+            // Handle quality changes
+            this.handleEvents();
+        }
+    },
+
+    handleEvents() {
+        // Listen for quality change events from the select element
+        document.querySelector('select').addEventListener('change', (e) => {
+            const quality = e.target.value;
+
+            if (quality === 'auto') {
+                this.hls.currentLevel = -1; // -1 means auto
+            } else {
+                // Find the closest quality level
+                const levels = this.hls.levels;
+                const targetHeight = parseInt(quality);
+
+                const selectedLevel = levels.findIndex(level =>
+                    level.height === targetHeight
+                );
+
+                if (selectedLevel !== -1) {
+                    this.hls.currentLevel = selectedLevel;
                 }
-            });
-        } else {
-            console.error('HLS.js not supported');
+            }
+        });
+    },
+
+    destroyed() {
+        if (this.hls) {
+            this.hls.destroy();
         }
     }
-}
+};
 
 export default VideoPlayer;
