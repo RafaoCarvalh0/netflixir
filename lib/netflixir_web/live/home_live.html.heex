@@ -1,0 +1,48 @@
+<div class="px-4 sm:px-6 lg:px-8">
+  <div class="sm:flex sm:items-center mb-8">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-semibold text-white">Available Videos</h1>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <%= for video <- @videos do %>
+      <div class="group relative">
+        <div class="aspect-[2/3] w-full overflow-hidden rounded-md bg-gray-800 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+          <img
+            src={"/images/thumbnails/#{video.id}.jpg"}
+            alt={video.title}
+            class="h-full w-full object-cover"
+          />
+
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-0 left-0 right-0 p-4">
+              <h3 class="text-sm font-semibold text-white mb-1">
+                {video.title}
+              </h3>
+
+              <.link
+                navigate={~p"/watch/#{video.id}"}
+                class="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 w-full"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 mr-1"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Play
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

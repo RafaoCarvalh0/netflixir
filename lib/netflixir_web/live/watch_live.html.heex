@@ -1,0 +1,19 @@
+<div class="bg-black min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-4">
+      <h1 class="text-2xl font-bold text-white">{@video.title}</h1>
+    </div>
+
+    <div class="aspect-video w-full bg-black rounded-lg overflow-hidden">
+      <video
+        id="video-player"
+        class="w-full h-full"
+        controls
+        playsinline
+        data-src={@video.playlist_path}
+        phx-hook="VideoPlayer"
+      >
+      </video>
+    </div>
+  </div>
+</div>

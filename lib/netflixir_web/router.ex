@@ -17,11 +17,7 @@ defmodule NetflixirWeb.Router do
   scope "/", NetflixirWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", HomeLive
+    live "/watch/:id", WatchLive
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", NetflixirWeb do
-  #   pipe_through :api
-  # end
 end
