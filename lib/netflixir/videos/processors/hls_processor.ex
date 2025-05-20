@@ -30,10 +30,8 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
 
   @hls_path "priv/static/videos/hls"
 
-  # TODO: Remove the example default value for resolutions_dir once everything
-  # is working.
   @spec create_video_segments(String.t()) :: {:ok, video_segments_dir()} | {:error, String.t()}
-  def create_video_segments(resolutions_dir \\ "priv/static/videos/resolutions/cat_rave") do
+  def create_video_segments(resolutions_dir) do
     video_segments_dir = @hls_path <> "/" <> Path.basename(resolutions_dir)
 
     with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_segments_dir),

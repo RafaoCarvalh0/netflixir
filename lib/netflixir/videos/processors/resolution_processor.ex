@@ -40,12 +40,8 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
 
   @resolutions_path "priv/static/videos/resolutions"
 
-  # TODO: Remove the example default value for transcoded_video_path once everything
-  # is working.
   @spec create_video_resolutions(String.t()) :: {:ok, [resolution_path()]} | {:error, String.t()}
-  def create_video_resolutions(
-        transcoded_video_path \\ "priv/static/videos/transcoded/cat_rave.mp4"
-      ) do
+  def create_video_resolutions(transcoded_video_path) do
     transcoded_video_resolutions_dir =
       @resolutions_path <> "/" <> Path.basename(transcoded_video_path, ".mp4")
 

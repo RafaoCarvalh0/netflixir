@@ -33,10 +33,8 @@ defmodule Netflixir.Videos.Processors.Transcoder do
   @transcoded_videos_path "priv/static/videos/transcoded"
   @intro_file "priv/static/videos/intro/intro.mp4"
 
-  # TODO: Remove the example default value for raw_video once everything
-  # is working.
   @spec transcode_raw_video(String.t()) :: {:ok, transcoded_video()} | {:error, String.t()}
-  def transcode_raw_video(raw_video \\ "priv/static/videos/raw/cat_rave.mp4") do
+  def transcode_raw_video(raw_video) do
     output_file_path = generate_transcoded_file_path(raw_video)
 
     with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(@transcoded_videos_path),
