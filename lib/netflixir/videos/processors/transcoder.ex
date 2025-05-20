@@ -24,44 +24,37 @@ defmodule Netflixir.Videos.Processors.Transcoder do
   format will be MP4 with settings optimized for web streaming.
 
   """
-  @processed_videos_path "priv/static/videos/processed"
+  alias Netflixir.Utils.DirectoryUtils
+
+  @transcoded_videos_path "priv/static/videos/transcoded"
 
   # TODO: Remove the example default value for raw_file_path once everything
   # is working.
+  @spec transcode(String.t()) :: {:ok, String.t()} | {:error, String.t()}
   def transcode(raw_file_path \\ "priv/static/videos/raw/cat_rave.mp4") do
     output_file_path = generate_transcoded_file_path(raw_file_path)
 
-    with :ok <- File.mkdir_p(@processed_videos_path),
+    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(@transcoded_videos_path),
          {:ok, processed_video_path} <- transcode_with_ffmpeg(raw_file_path, output_file_path) do
       {:ok, processed_video_path}
     else
       {:error, reason} ->
-        formatted_reason = format_reason(reason)
-        {:error, "Failed to transcode video: #{formatted_reason}"}
+        {:error, "Failed to transcode video: #{reason}"}
 
       error ->
         {:error, "Failed to transcode video: #{inspect(error)}"}
     end
   end
 
-  defp format_reason(:eacces),
-    do: "missing search or write permissions for the parent directories of path"
-
-  defp format_reason(:enospc), do: "there is no space left on the device"
-  defp format_reason(:enotdir), do: "a component of path is not a directory"
-  defp format_reason(reason), do: reason
-
   defp generate_transcoded_file_path(raw_file_path) do
     output_file_base_name =
-      raw_file_path
-      |> Path.basename()
-      |> String.replace_leading(".", "")
+      Path.basename(raw_file_path)
 
-    "#{@processed_videos_path}/#{output_file_base_name}"
+    "#{@transcoded_videos_path}/#{output_file_base_name}"
   end
 
   defp transcode_with_ffmpeg(raw_file_path, output_path) do
-    args = build_ffmpeg_args(raw_file_path, output_path)
+    args = build_ffmpeg_transcoding_args(raw_file_path, output_path)
 
     case System.cmd("ffmpeg", args, stderr_to_stdout: true) do
       {_, 0} -> {:ok, output_path}
@@ -69,7 +62,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     end
   end
 
-  defp build_ffmpeg_args(raw_file_path, output_path) do
+  defp build_ffmpeg_transcoding_args(raw_file_path, output_path) do
     h264_codec_ffmpeg_lib = "libx264"
 
     input_file = ["-i", raw_file_path]
@@ -88,11 +81,6 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     # Slow preset takes longer to transcode but produces a better quality video
     preset = ["-preset", "slow"]
 
-    # The faststart is what enables the video to be played in the browser
-    # without waiting for the entire file to download
-    # Crucial for streaming
-    movflags = ["-movflags", "+faststart"]
-
     List.flatten([
       input_file,
       video_codec,
@@ -100,7 +88,6 @@ defmodule Netflixir.Videos.Processors.Transcoder do
       video_bitrate,
       audio_bitrate,
       preset,
-      movflags,
       output_path
     ])
   end
