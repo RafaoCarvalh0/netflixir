@@ -20,4 +20,16 @@ defmodule Netflixir.Utils.DirectoryUtils do
 
   defp format_reason(:enospc), do: "there is no space left on the device"
   defp format_reason(:enotdir), do: "a component of path is not a directory"
+
+  def get_directory_creation_date(dir) do
+    case File.stat(dir) do
+      {:ok, %{ctime: creation_time}} ->
+        creation_time
+        |> NaiveDateTime.from_erl!()
+        |> Calendar.strftime("%Y-%m-%d %H:%M:%S")
+
+      _ ->
+        "Unknown"
+    end
+  end
 end
