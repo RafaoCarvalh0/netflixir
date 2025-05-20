@@ -4,34 +4,37 @@
       <h1 class="text-2xl font-bold text-white">{@video.title}</h1>
     </div>
 
-    <div class="aspect-video w-full bg-black rounded-lg overflow-hidden">
-      <video
-        id="video-player"
-        class="w-full h-full"
-        controls
-        playsinline
-        disablePictureInPicture
-        data-src={@video.playlist_path}
-        phx-hook="VideoPlayer"
-      >
-      </video>
-    </div>
-
-    <div class="mt-4 flex items-center justify-end space-x-2 text-white">
-      <span class="text-sm">Qualidade:</span>
-      <div class="relative">
-        <select
-          class="bg-zinc-800 text-white rounded-md pl-3 pr-8 py-1.5 text-sm border border-zinc-700 hover:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-          phx-change="change_quality"
+    <div class="relative">
+      <div class="aspect-video w-full bg-black rounded-lg overflow-hidden">
+        <video
+          id="video-player"
+          class="w-full h-full"
+          controls
+          playsinline
+          disablePictureInPicture
+          data-src={@video.playlist_path}
+          phx-hook="VideoPlayer"
         >
-          <option value="auto">Auto</option>
-          <option value="1080">1080p</option>
-          <option value="720">720p</option>
-          <option value="480">480p</option>
-          <option value="360">360p</option>
-          <option value="240">240p</option>
-          <option value="144">144p</option>
-        </select>
+        </video>
+      </div>
+
+      <div class="mt-4 flex items-center justify-end space-x-2 text-white">
+        <span class="text-sm">Quality:</span>
+        <form phx-change="change_quality" class="relative">
+          <select
+            name="quality"
+            class="bg-zinc-800 text-white rounded-md pl-3 pr-8 py-1.5 text-sm border border-zinc-700 hover:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            value={@current_quality}
+          >
+            <option value="auto" selected={@current_quality == "auto"}>Auto</option>
+            <option value="1080" selected={@current_quality == "1080"}>1080p</option>
+            <option value="720" selected={@current_quality == "720"}>720p</option>
+            <option value="480" selected={@current_quality == "480"}>480p</option>
+            <option value="360" selected={@current_quality == "360"}>360p</option>
+            <option value="240" selected={@current_quality == "240"}>240p</option>
+            <option value="144" selected={@current_quality == "144"}>144p</option>
+          </select>
+        </form>
       </div>
     </div>
   </div>

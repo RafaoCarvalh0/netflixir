@@ -14,7 +14,7 @@ defmodule NetflixirWeb.WatchLive do
   end
 
   @impl true
-  def handle_event("change_quality", %{"value" => quality}, socket) do
+  def handle_event("change_quality", %{"quality" => quality}, socket) do
     {:noreply, assign(socket, :current_quality, quality)}
   end
 end
