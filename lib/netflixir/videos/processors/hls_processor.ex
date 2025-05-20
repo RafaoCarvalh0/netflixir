@@ -1,4 +1,4 @@
-defmodule Netflixir.Videos.Processors.HLSProcessor do
+defmodule Netflixir.Videos.Processors.HlsProcessor do
   @moduledoc """
   Module responsible for creating HLS (HTTP Live Streaming) segments from videos.
 
@@ -26,18 +26,20 @@ defmodule Netflixir.Videos.Processors.HLSProcessor do
   alias Netflixir.Utils.FfmpegUtils
   alias Netflixir.Videos.Processors.ResolutionProcessor
 
+  @type video_segments_dir :: String.t()
+
   @hls_path "priv/static/videos/hls"
 
   # TODO: Remove the example default value for resolutions_dir once everything
   # is working.
-  @spec process_hls(String.t()) :: {:ok, String.t()} | {:error, String.t()}
-  def process_hls(resolutions_dir \\ "priv/static/videos/resolutions/cat_rave") do
-    hls_output_dir = @hls_path <> "/" <> Path.basename(resolutions_dir)
+  @spec create_video_segments(String.t()) :: {:ok, video_segments_dir()} | {:error, String.t()}
+  def create_video_segments(resolutions_dir \\ "priv/static/videos/resolutions/cat_rave") do
+    video_segments_dir = @hls_path <> "/" <> Path.basename(resolutions_dir)
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(hls_output_dir),
-         {:ok, _} <- create_hls_segments(resolutions_dir, hls_output_dir),
-         :ok <- create_master_playlist(hls_output_dir) do
-      {:ok, hls_output_dir}
+    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_segments_dir),
+         {:ok, _} <- create_hls_segments(resolutions_dir, video_segments_dir),
+         :ok <- create_master_playlist(video_segments_dir) do
+      {:ok, video_segments_dir}
     else
       {:error, reason} -> {:error, "Failed to create HLS: #{reason}"}
     end
@@ -53,9 +55,10 @@ defmodule Netflixir.Videos.Processors.HLSProcessor do
       )
       |> Enum.into([])
 
-    case Enum.all?(response, &match?({:ok, _}, &1)) do
-      true -> {:ok, response}
-      false -> {:error, "Failed to create segments for one or more resolutions"}
+    if Enum.all?(response, &match?({:ok, _}, &1)) do
+      {:ok, response}
+    else
+      {:error, response}
     end
   end
 
@@ -110,7 +113,7 @@ defmodule Netflixir.Videos.Processors.HLSProcessor do
     ])
   end
 
-  defp create_master_playlist(hls_output_dir) do
+  defp create_master_playlist(video_segments_dir) do
     resolutions = ResolutionProcessor.get_available_video_resolutions()
 
     # This is the HLS master playlist format:
@@ -137,7 +140,7 @@ defmodule Netflixir.Videos.Processors.HLSProcessor do
     #{build_master_playlist_entries(resolutions)}
     """
 
-    File.write("#{hls_output_dir}/master.m3u8", content)
+    File.write("#{video_segments_dir}/master.m3u8", content)
   end
 
   # This function builds the entries for each quality in the master playlist:

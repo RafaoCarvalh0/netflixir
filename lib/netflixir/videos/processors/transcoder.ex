@@ -28,18 +28,20 @@ defmodule Netflixir.Videos.Processors.Transcoder do
   alias Netflixir.Utils.DirectoryUtils
   alias Netflixir.Utils.FfmpegUtils
 
+  @type transcoded_video :: String.t()
+
   @transcoded_videos_path "priv/static/videos/transcoded"
   @intro_file "priv/static/videos/intro/intro.mp4"
 
-  # TODO: Remove the example default value for raw_file_path once everything
+  # TODO: Remove the example default value for raw_video once everything
   # is working.
-  @spec transcode(String.t()) :: {:ok, String.t()} | {:error, String.t()}
-  def transcode(raw_file_path \\ "priv/static/videos/raw/cat_rave.mp4") do
-    output_file_path = generate_transcoded_file_path(raw_file_path)
+  @spec transcode_raw_video(String.t()) :: {:ok, transcoded_video()} | {:error, String.t()}
+  def transcode_raw_video(raw_video \\ "priv/static/videos/raw/cat_rave.mp4") do
+    output_file_path = generate_transcoded_file_path(raw_video)
 
     with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(@transcoded_videos_path),
-         {:ok, processed_video_path} <- transcode_with_intro(raw_file_path, output_file_path) do
-      {:ok, processed_video_path}
+         {:ok, transcoded_video} <- transcode_with_intro(raw_video, output_file_path) do
+      {:ok, transcoded_video}
     else
       {:error, reason} ->
         {:error, "Failed to transcode video: #{reason}"}
@@ -49,15 +51,15 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     end
   end
 
-  defp generate_transcoded_file_path(raw_file_path) do
+  defp generate_transcoded_file_path(raw_video) do
     output_file_base_name =
-      Path.basename(raw_file_path)
+      Path.basename(raw_video)
 
     "#{@transcoded_videos_path}/#{output_file_base_name}"
   end
 
-  defp transcode_with_intro(raw_file_path, output_path) do
-    raw_file_path
+  defp transcode_with_intro(raw_video, output_path) do
+    raw_video
     |> build_ffmpeg_transcoding_args(output_path)
     |> FfmpegUtils.run_ffmpeg()
     |> case do
@@ -66,7 +68,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     end
   end
 
-  defp build_ffmpeg_transcoding_args(raw_file_path, output_path) do
+  defp build_ffmpeg_transcoding_args(raw_video, output_path) do
     force_overwrite = "-y"
 
     h264_codec_ffmpeg_lib = "libx264"
@@ -75,7 +77,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
       "-i",
       @intro_file,
       "-i",
-      raw_file_path
+      raw_video
     ]
 
     # Filter Complex: Video/audio processing pipeline
