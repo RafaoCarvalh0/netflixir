@@ -55,3 +55,34 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+config :netflixir, :video_resolutions, [
+  %{
+    name: "1080p",
+    resolution: "1920x1080",
+    bitrate: "5000k",
+    audio_bitrate: "192k",
+    bandwidth: "5000000"
+  },
+  %{
+    name: "720p",
+    resolution: "1280x720",
+    bitrate: "2800k",
+    audio_bitrate: "128k",
+    bandwidth: "2800000"
+  },
+  %{
+    name: "480p",
+    resolution: "854x480",
+    bitrate: "1400k",
+    audio_bitrate: "96k",
+    bandwidth: "1400000"
+  },
+  %{
+    name: "360p",
+    resolution: "640x360",
+    bitrate: "800k",
+    audio_bitrate: "64k",
+    bandwidth: "800000"
+  }
+]

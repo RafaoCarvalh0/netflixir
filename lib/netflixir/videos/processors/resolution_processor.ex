@@ -38,33 +38,6 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
 
   @resolutions_path "priv/static/videos/resolutions"
 
-  @resolutions [
-    %{
-      name: "1080p",
-      resolution: "1920x1080",
-      bitrate: "5000k",
-      audio_bitrate: "192k"
-    },
-    %{
-      name: "720p",
-      resolution: "1280x720",
-      bitrate: "2800k",
-      audio_bitrate: "128k"
-    },
-    %{
-      name: "480p",
-      resolution: "854x480",
-      bitrate: "1400k",
-      audio_bitrate: "96k"
-    },
-    %{
-      name: "360p",
-      resolution: "640x360",
-      bitrate: "800k",
-      audio_bitrate: "64k"
-    }
-  ]
-
   # TODO: Remove the example default value for transcoded_video_path once everything
   # is working.
   def process_resolutions(transcoded_video_path \\ "priv/static/videos/transcoded/cat_rave.mp4") do
@@ -83,7 +56,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
 
   defp create_resolutions(transcoded_video_path, transcoded_video_resolutions_dir) do
     response =
-      @resolutions
+      get_available_video_resolutions()
       |> Task.async_stream(
         &create_resolution(transcoded_video_path, transcoded_video_resolutions_dir, &1),
         timeout: :infinity
@@ -154,5 +127,18 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
       movflags,
       output_path
     ])
+  end
+
+  @spec get_available_video_resolutions :: [
+          %{
+            name: String.t(),
+            resolution: String.t(),
+            bitrate: String.t(),
+            audio_bitrate: String.t(),
+            bandwidth: String.t()
+          }
+        ]
+  def get_available_video_resolutions do
+    Application.get_env(:netflixir, :video_resolutions)
   end
 end

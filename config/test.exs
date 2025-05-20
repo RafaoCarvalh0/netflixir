@@ -29,3 +29,13 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+config :netflixir, :video_resolutions, [
+  %{
+    name: "360p",
+    resolution: "640x360",
+    bitrate: "800k",
+    audio_bitrate: "64k",
+    bandwidth: "800000"
+  }
+]
