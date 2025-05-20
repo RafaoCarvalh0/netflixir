@@ -84,5 +84,19 @@ config :netflixir, :video_resolutions, [
     bitrate: "800k",
     audio_bitrate: "64k",
     bandwidth: "800000"
+  },
+  %{
+    name: "240p",
+    resolution: "426x240",
+    bitrate: "400k",
+    audio_bitrate: "48k",
+    bandwidth: "400000"
+  },
+  %{
+    name: "144p",
+    resolution: "256x144",
+    bitrate: "200k",
+    audio_bitrate: "32k",
+    bandwidth: "200000"
   }
 ]
