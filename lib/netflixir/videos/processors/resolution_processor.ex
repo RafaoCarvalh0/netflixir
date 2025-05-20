@@ -34,6 +34,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
   and network conditions.
   """
   alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.FfmpegUtils
 
   @resolutions_path "priv/static/videos/resolutions"
 
@@ -100,9 +101,9 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     output_path = "#{transcoded_video_resolutions_dir}/#{resolution.name}.mp4"
     args = build_ffmpeg_resolution_args(transcoded_video_path, resolution, output_path)
 
-    case System.cmd("ffmpeg", args, stderr_to_stdout: true) do
-      {_, 0} -> output_path
-      {error, _} -> inspect(error)
+    case FfmpegUtils.run_ffmpeg(args) do
+      {:ok, :success} -> {:ok, output_path}
+      error -> error
     end
   end
 
@@ -111,6 +112,8 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
          resolution,
          output_path
        ) do
+    force_overwrite = "-y"
+
     input_file = ["-i", transcoded_video_path]
 
     # Video scaling filter for different resolutions
@@ -140,6 +143,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     movflags = ["-movflags", "+faststart"]
 
     List.flatten([
+      force_overwrite,
       input_file,
       video_filter,
       video_codec,
