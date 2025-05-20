@@ -8,12 +8,8 @@
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     <%= for video <- @videos do %>
       <div class="group relative">
-        <div class="aspect-[2/3] w-full overflow-hidden rounded-md bg-gray-800 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
-          <img
-            src={"/images/thumbnails/#{video.id}.jpg"}
-            alt={video.title}
-            class="h-full w-full object-cover"
-          />
+        <div class="aspect-[2/3] w-full overflow-hidden rounded-md bg-black transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+          <img src={video.thumbnail_path} alt={video.title} class="h-full w-full object-cover" />
 
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div class="absolute bottom-0 left-0 right-0 p-4">
