@@ -41,3 +41,6 @@ priv/static/videos/transcoded/
 # Ignore processed resolutions.
 priv/static/videos/resolutions/
 
+# Ignore HTLS files.
+priv/static/videos/hls/
+
