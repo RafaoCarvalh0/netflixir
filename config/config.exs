@@ -62,6 +62,7 @@ config :netflixir, :videos,
     transcoded_videos_local_path: "priv/static/videos/transcoded",
     intro_video_local_path: "priv/static/videos/intro/intro.mp4"
   },
+  storage_bucket: System.get_env("STORAGE_BUCKET"),
   resolutions: %{
     "1080p" => %{
       name: "1080p",

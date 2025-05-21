@@ -41,7 +41,6 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
   @type resolution_path :: String.t()
   @type resolution_storage_path :: String.t()
 
-  @bucket "netflixir"
   @resolutions_local_path "priv/static/videos/resolutions"
 
   @spec create_video_resolutions(String.t()) ::
@@ -109,7 +108,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     resolution_name = Path.basename(local_path)
     storage_key = "processed_videos/#{video_name}/resolutions/#{resolution_name}"
 
-    case Storage.upload(local_path, @bucket, storage_key) do
+    case Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key) do
       {:ok, storage_path} -> {:ok, storage_path}
       error -> error
     end

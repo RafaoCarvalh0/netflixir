@@ -69,6 +69,9 @@ defmodule Netflixir.Videos.VideoConfig do
     get_video_config(:resolutions)[name]
   end
 
+  @spec storage_bucket :: String.t()
+  def storage_bucket, do: get_video_config(:storage_bucket)
+
   defp get_path_config(key) do
     get_video_config(:paths)[key]
   end
