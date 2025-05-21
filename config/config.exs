@@ -60,7 +60,8 @@ config :netflixir, :videos,
   paths: %{
     raw_videos_local_path: "priv/static/videos/raw",
     transcoded_videos_local_path: "priv/static/videos/transcoded",
-    intro_video_local_path: "priv/static/videos/intro/intro.mp4"
+    intro_video_local_path: "priv/static/videos/intro/intro.mp4",
+    resolutions_local_path: "priv/static/videos/resolutions"
   },
   storage_bucket: System.get_env("STORAGE_BUCKET"),
   resolutions: %{

@@ -41,8 +41,6 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
   @type resolution_path :: String.t()
   @type resolution_storage_path :: String.t()
 
-  @resolutions_local_path "priv/static/videos/resolutions"
-
   @spec create_video_resolutions(String.t()) ::
           {:ok, [resolution_storage_path()]}
           | {:error, String.t()}
@@ -164,6 +162,6 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
   end
 
   defp resolutions_local_path_for(video_name) do
-    Path.join(@resolutions_local_path, video_name)
+    Path.join(VideoConfig.resolutions_local_path(), video_name)
   end
 end

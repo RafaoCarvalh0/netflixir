@@ -32,6 +32,12 @@ defmodule Netflixir.Videos.VideoConfig do
   def intro_video_local_path, do: get_path_config(:intro_video_local_path)
 
   @doc """
+  Gets the local path where resolution variants of videos are stored.
+  """
+  @spec resolutions_local_path :: String.t()
+  def resolutions_local_path, do: get_path_config(:resolutions_local_path)
+
+  @doc """
   Gets the list of all configured video resolutions.
   Returns them in order from highest to lowest quality (based on resolution).
   """
