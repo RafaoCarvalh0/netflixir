@@ -39,10 +39,10 @@ npm-debug.log
 priv/static/videos/transcoded/
 
 # Ignore segments dir.
-priv/static/videos/hls/
+priv/static/videos/hls
 
 # Ignore resolutions dir.
-priv/static/videos/resolutions/
+priv/static/videos/resolutions
 
 # Ignore thumbnails dir.
 priv/static/videos/thumbnails/

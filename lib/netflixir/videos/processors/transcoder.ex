@@ -67,7 +67,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
 
   defp transcoded_file_path(raw_video) do
     output_file_base_name = Path.basename(raw_video)
-    Path.join(VideoConfig.transcoded_videos_local_path(), output_file_base_name) |> dbg()
+    Path.join(VideoConfig.transcoded_videos_local_path(), output_file_base_name)
   end
 
   defp transcode_with_intro(raw_video, output_path) do

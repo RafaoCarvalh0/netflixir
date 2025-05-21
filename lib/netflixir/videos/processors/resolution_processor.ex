@@ -85,13 +85,15 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     Path.join(VideoConfig.resolutions_local_path(), video_name)
   end
 
-  defp create_resolutions(transcoded_video_path, resolutions_dir) do
+  defp create_resolutions(transcoded_video_path, video_resolutions_local_dir) do
     available_resolutions = VideoConfig.video_resolutions()
 
     response =
       available_resolutions
       |> Task.async_stream(
-        &create_resolution(transcoded_video_path, resolutions_dir, &1),
+        fn {_resolution_name, resolution_config} ->
+          create_resolution(transcoded_video_path, video_resolutions_local_dir, resolution_config)
+        end,
         timeout: :infinity
       )
       |> Enum.into([])
