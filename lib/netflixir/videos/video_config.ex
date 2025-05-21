@@ -6,22 +6,22 @@ defmodule Netflixir.Videos.VideoConfig do
   """
 
   @doc """
-  Gets the path where raw videos are stored locally.
+  Gets the local path where raw videos are stored.
   """
-  @spec raw_videos_path :: String.t()
-  def raw_videos_path, do: get_path_config(:raw_videos_local_path)
+  @spec raw_videos_local_path :: String.t()
+  def raw_videos_local_path, do: get_path_config(:raw_videos_local_path)
 
   @doc """
-  Gets the path where transcoded videos are stored.
+  Gets the local path where transcoded videos are stored.
   """
-  @spec transcoded_videos_path :: String.t()
-  def transcoded_videos_path, do: get_path_config(:transcoded_videos_path)
+  @spec transcoded_videos_local_path :: String.t()
+  def transcoded_videos_local_path, do: get_path_config(:transcoded_videos_local_path)
 
   @doc """
-  Gets the path to the intro video file.
+  Gets the local path to the intro video file.
   """
-  @spec intro_file_path :: String.t()
-  def intro_file_path, do: get_path_config(:intro_file_path)
+  @spec intro_video_local_path :: String.t()
+  def intro_video_local_path, do: get_path_config(:intro_video_local_path)
 
   @doc """
   Gets the list of all configured video resolutions.

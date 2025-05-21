@@ -59,8 +59,8 @@ import_config "#{config_env()}.exs"
 config :netflixir, :videos,
   paths: %{
     raw_videos_local_path: "priv/static/videos/raw",
-    transcoded_videos_path: "priv/static/videos/transcoded",
-    intro_file_path: "priv/static/videos/intro/intro.mp4"
+    transcoded_videos_local_path: "priv/static/videos/transcoded",
+    intro_video_local_path: "priv/static/videos/intro/intro.mp4"
   },
   resolutions: %{
     "1080p" => %{
