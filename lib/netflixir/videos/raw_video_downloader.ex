@@ -8,6 +8,8 @@ defmodule Netflixir.Videos.RawVideoDownloader do
   alias Netflixir.Utils.DirectoryUtils
   alias Netflixir.Videos.VideoConfig
 
+  @type raw_video_local_path :: String.t()
+
   @raw_videos_bucket "netflixir"
   @raw_videos_prefix "raw_videos/"
 
@@ -29,9 +31,9 @@ defmodule Netflixir.Videos.RawVideoDownloader do
       iex> RawVideoDownloader.download("invalid.mp4")
       {:error, "Failed to download video: not_found"}
   """
-  @spec download_raw_video(String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec download_raw_video(String.t()) :: {:ok, raw_video_local_path()} | {:error, String.t()}
   def download_raw_video(video_name) do
-    local_path = generate_local_path_for(video_name)
+    local_path = local_path_for(video_name)
     storage_key = @raw_videos_prefix <> video_name
 
     with {:ok, _} <-
@@ -44,22 +46,8 @@ defmodule Netflixir.Videos.RawVideoDownloader do
     end
   end
 
-  @doc """
-  Returns the local path where a video would be stored, without downloading it.
-  Useful for checking if a video already exists locally.
-
-  ## Parameters
-    - video_name: The name of the video file
-
-  ## Returns
-    - The local path where the video would be stored
-
-  ## Examples
-      iex> RawVideoDownloader.generate_local_path_for("my_video.mp4")
-      "priv/static/videos/raw/my_video.mp4"
-  """
-  @spec generate_local_path_for(String.t()) :: String.t()
-  def generate_local_path_for(video_name) do
+  @spec local_path_for(String.t()) :: String.t()
+  def local_path_for(video_name) do
     Path.join(VideoConfig.raw_videos_local_path(), video_name)
   end
 end

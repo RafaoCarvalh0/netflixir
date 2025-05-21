@@ -27,17 +27,16 @@ defmodule Netflixir.Videos.Processors.Transcoder do
   """
   alias Netflixir.Utils.DirectoryUtils
   alias Netflixir.Utils.FfmpegUtils
+  alias Netflixir.Videos.VideoConfig
 
   @type transcoded_video :: String.t()
 
-  @transcoded_videos_path "priv/static/videos/transcoded"
-  @intro_file "priv/static/videos/intro/intro.mp4"
-
   @spec transcode_raw_video(String.t()) :: {:ok, transcoded_video()} | {:error, String.t()}
   def transcode_raw_video(raw_video) do
-    output_file_path = generate_transcoded_file_path(raw_video)
+    output_file_path = transcoded_file_path(raw_video)
+    transcoded_videos_path = VideoConfig.transcoded_videos_local_path()
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(@transcoded_videos_path),
+    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(transcoded_videos_path),
          {:ok, transcoded_video} <- transcode_with_intro(raw_video, output_file_path) do
       {:ok, transcoded_video}
     else
@@ -49,11 +48,9 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     end
   end
 
-  defp generate_transcoded_file_path(raw_video) do
-    output_file_base_name =
-      Path.basename(raw_video)
-
-    "#{@transcoded_videos_path}/#{output_file_base_name}"
+  defp transcoded_file_path(raw_video) do
+    output_file_base_name = Path.basename(raw_video)
+    Path.join(VideoConfig.transcoded_videos_local_path(), output_file_base_name)
   end
 
   defp transcode_with_intro(raw_video, output_path) do
@@ -69,10 +66,11 @@ defmodule Netflixir.Videos.Processors.Transcoder do
   defp build_ffmpeg_transcoding_args(raw_video, output_path) do
     force_overwrite = "-y"
     h264_codec_ffmpeg_lib = "libx264"
+    intro_file = VideoConfig.intro_video_local_path()
 
     input_files = [
       "-i",
-      @intro_file,
+      intro_file,
       "-i",
       raw_video
     ]
