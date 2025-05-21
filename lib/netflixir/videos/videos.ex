@@ -1,4 +1,3 @@
-# lib/netflixir/videos.ex
 defmodule Netflixir.Videos do
   @moduledoc """
   The Videos context.
