@@ -5,6 +5,14 @@ defmodule Netflixir.Videos.VideoConfig do
   the actual configuration structure and implementation details.
   """
 
+  @type resolution :: %{
+          name: String.t(),
+          resolution: String.t(),
+          bitrate: String.t(),
+          audio_bitrate: String.t(),
+          bandwidth: String.t()
+        }
+
   @doc """
   Gets the local path where raw videos are stored.
   """
@@ -27,7 +35,7 @@ defmodule Netflixir.Videos.VideoConfig do
   Gets the list of all configured video resolutions.
   Returns them in order from highest to lowest quality (based on resolution).
   """
-  @spec video_resolutions :: [map()]
+  @spec video_resolutions :: [resolution()]
   def video_resolutions do
     resolutions = get_video_config(:resolutions)
 
@@ -56,7 +64,7 @@ defmodule Netflixir.Videos.VideoConfig do
       iex> VideoConfig.get_resolution("invalid")
       nil
   """
-  @spec get_resolution(String.t()) :: map() | nil
+  @spec get_resolution(String.t()) :: resolution() | nil
   def get_resolution(name) do
     get_video_config(:resolutions)[name]
   end

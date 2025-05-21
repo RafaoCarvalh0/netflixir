@@ -33,50 +33,84 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
   Used by streaming services to ensure optimal playback across all devices
   and network conditions.
   """
+  alias Netflixir.Storage
   alias Netflixir.Utils.DirectoryUtils
   alias Netflixir.Utils.FfmpegUtils
+  alias Netflixir.Videos.VideoConfig
 
   @type resolution_path :: String.t()
+  @type resolution_storage_path :: String.t()
 
-  @resolutions_path "priv/static/videos/resolutions"
+  @bucket "netflixir"
+  @resolutions_local_path "priv/static/videos/resolutions"
 
-  @spec create_video_resolutions(String.t()) :: {:ok, [resolution_path()]} | {:error, String.t()}
+  @spec create_video_resolutions(String.t()) ::
+          {:ok, [resolution_storage_path()]}
+          | {:error, String.t()}
   def create_video_resolutions(transcoded_video_path) do
-    transcoded_video_resolutions_dir =
-      @resolutions_path <> "/" <> Path.basename(transcoded_video_path, ".mp4")
+    video_name = Path.basename(transcoded_video_path, ".mp4")
+    resolutions_dir = resolutions_local_path_for(video_name)
 
-    with {:ok, _} <-
-           DirectoryUtils.create_directory_if_not_exists(transcoded_video_resolutions_dir),
-         {:ok, _} <-
-           create_resolutions(transcoded_video_path, transcoded_video_resolutions_dir) do
-      {:ok, transcoded_video_resolutions_dir}
+    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(resolutions_dir),
+         {:ok, local_paths} <- create_resolutions(transcoded_video_path, resolutions_dir),
+         {:ok, storage_paths} <- upload_resolutions(video_name, local_paths) do
+      {:ok, storage_paths}
     else
       {:error, reason} -> {:error, "Failed to create video resolutions: #{reason}"}
     end
   end
 
-  defp create_resolutions(transcoded_video_path, transcoded_video_resolutions_dir) do
+  defp create_resolutions(transcoded_video_path, resolutions_dir) do
+    available_resolutions = VideoConfig.video_resolutions()
+
     response =
-      get_available_video_resolutions()
+      available_resolutions
       |> Task.async_stream(
-        &create_resolution(transcoded_video_path, transcoded_video_resolutions_dir, &1),
+        &create_resolution(transcoded_video_path, resolutions_dir, &1),
         timeout: :infinity
       )
       |> Enum.into([])
 
-    cond do
-      Enum.all?(response, &match?({:ok, _}, &1)) -> {:ok, response}
-      Enum.any?(response, &match?({:error, _}, &1)) -> {:error, inspect(response)}
-      true -> {:error, "Unknown error"}
+    case Enum.split_with(response, &match?({:ok, _}, &1)) do
+      {successes, []} ->
+        {:ok, Enum.map(successes, fn {:ok, path} -> path end)}
+
+      {_, failures} ->
+        {:error, "Failed to create some resolutions: #{inspect(failures)}"}
     end
   end
 
-  defp create_resolution(transcoded_video_path, transcoded_video_resolutions_dir, resolution) do
-    output_path = "#{transcoded_video_resolutions_dir}/#{resolution.name}.mp4"
+  defp create_resolution(transcoded_video_path, resolutions_dir, resolution) do
+    output_path = Path.join(resolutions_dir, "#{resolution.name}.mp4")
     args = build_ffmpeg_resolution_args(transcoded_video_path, resolution, output_path)
 
     case FfmpegUtils.run_ffmpeg(args) do
-      {:ok, :success} -> {:ok, output_path}
+      {:ok, :success} -> output_path
+      error -> error
+    end
+  end
+
+  defp upload_resolutions(video_name, local_paths) do
+    response =
+      local_paths
+      |> Task.async_stream(
+        &upload_resolution(video_name, &1),
+        timeout: :infinity
+      )
+      |> Enum.into([])
+
+    case Enum.split_with(response, &match?({:ok, _}, &1)) do
+      {successes, []} -> {:ok, Enum.map(successes, fn {:ok, path} -> path end)}
+      {_, failures} -> {:error, "Failed to upload some resolutions: #{inspect(failures)}"}
+    end
+  end
+
+  defp upload_resolution(video_name, local_path) when is_binary(local_path) do
+    resolution_name = Path.basename(local_path)
+    storage_key = "processed_videos/#{video_name}/resolutions/#{resolution_name}"
+
+    case Storage.upload(local_path, @bucket, storage_key) do
+      {:ok, storage_path} -> {:ok, storage_path}
       error -> error
     end
   end
@@ -108,7 +142,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     audio_bitrate = ["-b:a", resolution.audio_bitrate]
 
     # The -preset defines the balance between compression velocity and quality
-    # Slow preset takes longer to process but produces a better quality video
+    # A slow preset takes longer to process but produces a video with better overall quality
     preset = ["-preset", "slow"]
 
     # The faststart enables the video to be played in the browser
@@ -130,16 +164,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     ])
   end
 
-  @spec get_available_video_resolutions :: [
-          %{
-            name: String.t(),
-            resolution: String.t(),
-            bitrate: String.t(),
-            audio_bitrate: String.t(),
-            bandwidth: String.t()
-          }
-        ]
-  def get_available_video_resolutions do
-    Application.get_env(:netflixir, :video_resolutions)
+  defp resolutions_local_path_for(video_name) do
+    Path.join(@resolutions_local_path, video_name)
   end
 end
