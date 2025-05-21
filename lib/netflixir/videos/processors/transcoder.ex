@@ -121,10 +121,20 @@ defmodule Netflixir.Videos.Processors.Transcoder do
       "[outa]"
     ]
 
+    # Use H.264 codec for maximum compatibility across devices and browsers
     video_codec = ["-c:v", h264_codec_ffmpeg_lib]
+
+    # 2 Megabits per second is a good compromise between quality and size
     video_bitrate = ["-b:v", "2M"]
+
+    # AAC has better quality, compatibility, compression and efficiency than MP3
     audio_codec = ["-c:a", "aac"]
+
+    # 128 kilobits per second is a good compromise between quality and size
     audio_bitrate = ["-b:a", "128k"]
+
+    # The -preset defines the balance between compression velocity and quality
+    # Slow preset provides better compression (smaller file size) at the cost of increased encoding time
     preset = ["-preset", "slow"]
 
     List.flatten([
