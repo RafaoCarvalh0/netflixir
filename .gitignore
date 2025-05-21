@@ -50,3 +50,7 @@ priv/static/videos/thumbnails/
 # Ignore raw dir.
 priv/static/videos/raw/
 
+# Ignore envrc files.
+.envrc.*
+!.envrc.custom.example
+

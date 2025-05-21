@@ -100,3 +100,13 @@ config :netflixir, :video_resolutions, [
     bandwidth: "200000"
   }
 ]
+
+config :ex_aws,
+  access_key_id: System.get_env("B2_KEY_ID"),
+  secret_access_key: System.get_env("B2_APP_KEY"),
+  region: "us-east-1",
+  s3: [
+    scheme: "https://",
+    host: "s3.us-east-005.backblazeb2.com",
+    port: 443
+  ]
