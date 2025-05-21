@@ -56,57 +56,63 @@ config :phoenix, :json_library, Jason
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
 
-config :netflixir, :video_resolutions, [
-  %{
-    name: "1080p",
-    resolution: "1920x1080",
-    bitrate: "5000k",
-    audio_bitrate: "192k",
-    bandwidth: "5000000"
+config :netflixir, :videos,
+  paths: %{
+    raw_videos_local_path: "priv/static/videos/raw",
+    transcoded_videos_path: "priv/static/videos/transcoded",
+    intro_file_path: "priv/static/videos/intro/intro.mp4"
   },
-  %{
-    name: "720p",
-    resolution: "1280x720",
-    bitrate: "2800k",
-    audio_bitrate: "128k",
-    bandwidth: "2800000"
-  },
-  %{
-    name: "480p",
-    resolution: "854x480",
-    bitrate: "1400k",
-    audio_bitrate: "96k",
-    bandwidth: "1400000"
-  },
-  %{
-    name: "360p",
-    resolution: "640x360",
-    bitrate: "800k",
-    audio_bitrate: "64k",
-    bandwidth: "800000"
-  },
-  %{
-    name: "240p",
-    resolution: "426x240",
-    bitrate: "400k",
-    audio_bitrate: "48k",
-    bandwidth: "400000"
-  },
-  %{
-    name: "144p",
-    resolution: "256x144",
-    bitrate: "200k",
-    audio_bitrate: "32k",
-    bandwidth: "200000"
+  resolutions: %{
+    "1080p" => %{
+      name: "1080p",
+      resolution: "1920x1080",
+      bitrate: "5000k",
+      audio_bitrate: "192k",
+      bandwidth: "5000000"
+    },
+    "720p" => %{
+      name: "720p",
+      resolution: "1280x720",
+      bitrate: "2800k",
+      audio_bitrate: "128k",
+      bandwidth: "2800000"
+    },
+    "480p" => %{
+      name: "480p",
+      resolution: "854x480",
+      bitrate: "1400k",
+      audio_bitrate: "96k",
+      bandwidth: "1400000"
+    },
+    "360p" => %{
+      name: "360p",
+      resolution: "640x360",
+      bitrate: "800k",
+      audio_bitrate: "64k",
+      bandwidth: "800000"
+    },
+    "240p" => %{
+      name: "240p",
+      resolution: "426x240",
+      bitrate: "400k",
+      audio_bitrate: "48k",
+      bandwidth: "400000"
+    },
+    "144p" => %{
+      name: "144p",
+      resolution: "256x144",
+      bitrate: "200k",
+      audio_bitrate: "32k",
+      bandwidth: "200000"
+    }
   }
-]
 
 config :ex_aws,
   access_key_id: System.get_env("B2_KEY_ID"),
   secret_access_key: System.get_env("B2_APP_KEY"),
-  region: "us-east-1",
+  region: System.get_env("B2_REGION"),
   s3: [
     scheme: "https://",
-    host: "s3.us-east-005.backblazeb2.com",
-    port: 443
+    host: System.get_env("B2_HOST"),
+    port: System.get_env("B2_PORT")
   ]
