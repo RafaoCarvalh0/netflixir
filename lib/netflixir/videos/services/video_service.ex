@@ -1,8 +1,4 @@
-defmodule Netflixir.Videos do
-  @moduledoc """
-  The Videos context.
-  Handles all video-related operations including listing, processing and streaming.
-  """
+defmodule Netflixir.Videos.Services.VideoService do
   alias Netflixir.Utils.DirectoryAndFileUtils
 
   @default_hls_dir "priv/static/videos/hls"

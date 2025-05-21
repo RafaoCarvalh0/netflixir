@@ -1,11 +1,11 @@
 defmodule NetflixirWeb.WatchLive do
   use NetflixirWeb, :live_view
 
-  alias Netflixir.Videos
+  alias Netflixir.Videos.Services.VideoService
 
   @impl true
   def mount(%{"id" => video_id}, _session, socket) do
-    video = Videos.get_video_by_id!(video_id)
+    video = VideoService.get_video_by_id!(video_id)
 
     {:ok,
      socket

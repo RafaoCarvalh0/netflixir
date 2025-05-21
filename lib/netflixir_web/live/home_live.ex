@@ -2,11 +2,11 @@
 defmodule NetflixirWeb.HomeLive do
   use NetflixirWeb, :live_view
 
-  alias Netflixir.Videos
+  alias Netflixir.Videos.Services.VideoService
 
   @impl true
   def mount(_params, _session, socket) do
-    videos = Videos.list_available_videos()
+    videos = VideoService.list_available_videos()
 
     videos_with_thumbnails =
       Enum.map(videos, fn video ->
