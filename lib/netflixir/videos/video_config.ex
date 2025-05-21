@@ -4,9 +4,11 @@ defmodule Netflixir.Videos.VideoConfig do
   Provides a clean interface to access video configurations while encapsulating
   the actual configuration structure and implementation details.
   """
+  @type resolution_name :: String.t()
 
+  @type resolutions_map :: %{resolution_name() => resolution()}
   @type resolution :: %{
-          name: String.t(),
+          name: resolution_name(),
           resolution: String.t(),
           bitrate: String.t(),
           audio_bitrate: String.t(),
@@ -38,20 +40,16 @@ defmodule Netflixir.Videos.VideoConfig do
   def resolutions_local_path, do: get_path_config(:resolutions_local_path)
 
   @doc """
-  Gets the list of all configured video resolutions.
-  Returns them in order from highest to lowest quality (based on resolution).
+  Gets the local path where HLS segments and playlists are stored.
   """
-  @spec video_resolutions :: [resolution()]
-  def video_resolutions do
-    resolutions = get_video_config(:resolutions)
+  @spec hls_local_path :: String.t()
+  def hls_local_path, do: get_path_config(:hls_local_path)
 
-    keys =
-      resolutions
-      |> Map.keys()
-      |> Enum.sort(:desc)
-
-    Enum.map(keys, &resolutions[&1])
-  end
+  @doc """
+  Gets the map of all configured video resolutions.
+  """
+  @spec video_resolutions :: resolutions_map()
+  def video_resolutions, do: get_video_config(:resolutions)
 
   @doc """
   Gets a specific resolution configuration by name.

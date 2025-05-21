@@ -57,6 +57,10 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     end
   end
 
+  defp resolutions_local_path_for(video_name) do
+    Path.join(VideoConfig.resolutions_local_path(), video_name)
+  end
+
   defp create_resolutions(transcoded_video_path, resolutions_dir) do
     available_resolutions = VideoConfig.video_resolutions()
 
@@ -159,9 +163,5 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
       movflags,
       output_path
     ])
-  end
-
-  defp resolutions_local_path_for(video_name) do
-    Path.join(VideoConfig.resolutions_local_path(), video_name)
   end
 end
