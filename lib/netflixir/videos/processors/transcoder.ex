@@ -68,7 +68,6 @@ defmodule Netflixir.Videos.Processors.Transcoder do
 
   defp build_ffmpeg_transcoding_args(raw_video, output_path) do
     force_overwrite = "-y"
-
     h264_codec_ffmpeg_lib = "libx264"
 
     input_files = [
@@ -84,10 +83,13 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     # [0:a] - First input audio stream
     # [1:a] - Second input audio stream
     #
-    # For each video:
-    # 1. scale=640:360 - Resize to 360p
+    # For intro video:
+    # 1. Scale to match the main video's dimensions using [1:v]'s width and height
     # 2. force_original_aspect_ratio=decrease - Maintain original aspect ratio
-    # 3. pad=640:360:(ow-iw)/2:(oh-ih)/2 - Center with black bars if needed
+    # 3. pad to match main video's dimensions, centered
+    #
+    # For main video:
+    # Keep original dimensions, no scaling needed
     #
     # Concatenation:
     # [v0][0:a][v1][1:a] - Takes streams in order: video1, audio1, video2, audio2
@@ -95,9 +97,9 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     # [outv][outa] - Names output streams as 'outv' and 'outa'
     filter_complex = [
       "-filter_complex",
-      "[0:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2[v0];
-       [1:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2[v1];
-       [v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]"
+      "[1:v][0:v]scale2ref[v1][v0];
+       [v0]pad=iw:ih:(ow-iw)/2:(oh-ih)/2[padded_intro];
+       [padded_intro][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]"
     ]
 
     # Output Mapping: Defines which streams to use in the final file
