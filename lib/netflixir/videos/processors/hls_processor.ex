@@ -13,6 +13,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
   - Segments each resolution into small chunks (6 seconds each)
   - Creates a playlist (playlist.m3u8) for each resolution
   - Creates a master playlist (master.m3u8) that lists all available qualities
+  - Uploads all segments and playlists to storage for streaming
 
   Why HLS segmentation is necessary:
   - Enables adaptive bitrate streaming
@@ -22,33 +23,116 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
   - Used by major streaming services (Netflix, YouTube, etc.)
 
   """
+  alias Netflixir.Storage
   alias Netflixir.Utils.DirectoryUtils
   alias Netflixir.Utils.FfmpegUtils
-  alias Netflixir.Videos.Processors.ResolutionProcessor
+  alias Netflixir.Videos.VideoConfig
 
   @type video_segments_dir :: String.t()
+  @type segments_storage_path :: String.t()
 
-  @hls_path "priv/static/videos/hls"
+  @master_playlist_filename "master.m3u8"
+  @resolution_playlist_filename "playlist.m3u8"
+  @segment_file_extension ".ts"
 
-  @spec create_video_segments(String.t()) :: {:ok, video_segments_dir()} | {:error, String.t()}
-  def create_video_segments(resolutions_dir) do
-    video_segments_dir = @hls_path <> "/" <> Path.basename(resolutions_dir)
+  @spec create_video_segments(String.t()) :: {:ok, segments_storage_path()} | {:error, String.t()}
+  def create_video_segments(resolutions_local_dir) do
+    video_name = Path.basename(resolutions_local_dir)
+    video_segments_local_dir = Path.join(VideoConfig.hls_local_path(), video_name)
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_segments_dir),
-         {:ok, _} <- create_hls_segments(resolutions_dir, video_segments_dir),
-         :ok <- create_master_playlist(video_segments_dir) do
-      {:ok, video_segments_dir}
+    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_segments_local_dir),
+         {:ok, _} <- create_hls_segments(resolutions_local_dir, video_segments_local_dir),
+         :ok <- create_master_playlist(video_segments_local_dir),
+         {:ok, storage_path} <- upload_segments(video_name, video_segments_local_dir) do
+      {:ok, storage_path}
     else
       {:error, reason} -> {:error, "Failed to create HLS: #{reason}"}
     end
   end
 
-  defp create_hls_segments(resolutions_dir, hls_output_dir) do
+  defp upload_segments(video_name, video_segments_local_dir) do
+    storage_base_path = "processed_videos/#{video_name}/hls"
+
+    with {:ok, _} <- upload_master_playlist(video_segments_local_dir, storage_base_path),
+         {:ok, _} <- upload_resolution_segments(video_segments_local_dir, storage_base_path) do
+      {:ok, storage_base_path}
+    end
+  end
+
+  defp upload_master_playlist(video_segments_local_dir, storage_base_path) do
+    local_path = Path.join(video_segments_local_dir, @master_playlist_filename)
+    storage_key = "#{storage_base_path}/#{@master_playlist_filename}"
+
+    Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key)
+  end
+
+  defp upload_resolution_segments(video_segments_local_dir, storage_base_path) do
+    available_resolutions = VideoConfig.video_resolutions()
+
     response =
-      resolutions_dir
+      available_resolutions
+      |> Map.keys()
+      |> Task.async_stream(
+        &upload_resolution_files(video_segments_local_dir, storage_base_path, &1),
+        timeout: :infinity
+      )
+      |> Enum.into([])
+
+    case Enum.split_with(response, &match?({:ok, _}, &1)) do
+      {_successes, []} -> {:ok, storage_base_path}
+      {_, failures} -> {:error, "Failed to upload some resolution segments: #{inspect(failures)}"}
+    end
+  end
+
+  defp upload_resolution_files(video_segments_local_dir, storage_base_path, resolution_name) do
+    resolution_dir = Path.join(video_segments_local_dir, resolution_name)
+    resolution_storage_path = "#{storage_base_path}/#{resolution_name}"
+
+    with {:ok, files} <- File.ls(resolution_dir),
+         :ok <- upload_resolution_playlist(resolution_dir, resolution_storage_path),
+         :ok <- upload_resolution_segments(resolution_dir, resolution_storage_path, files) do
+      {:ok, resolution_storage_path}
+    end
+  end
+
+  defp upload_resolution_playlist(resolution_dir, resolution_storage_path) do
+    local_path = Path.join(resolution_dir, @resolution_playlist_filename)
+    storage_key = "#{resolution_storage_path}/#{@resolution_playlist_filename}"
+
+    case Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key) do
+      {:ok, _} -> :ok
+      error -> error
+    end
+  end
+
+  defp upload_resolution_segments(resolution_dir, resolution_storage_path, files) do
+    segment_files = Enum.filter(files, &String.ends_with?(&1, @segment_file_extension))
+
+    results =
+      segment_files
+      |> Task.async_stream(
+        fn segment_file ->
+          local_path = Path.join(resolution_dir, segment_file)
+          storage_key = "#{resolution_storage_path}/#{segment_file}"
+
+          Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key)
+        end,
+        timeout: :infinity
+      )
+      |> Enum.into([])
+
+    case Enum.split_with(results, &match?({:ok, _}, &1)) do
+      {_successes, []} -> :ok
+      {_, failures} -> {:error, "Failed to upload segments: #{inspect(failures)}"}
+    end
+  end
+
+  defp create_hls_segments(resolutions_local_dir, video_segments_local_dir) do
+    response =
+      resolutions_local_dir
       |> File.ls!()
       |> Task.async_stream(
-        &create_segments_for_resolution(resolutions_dir, hls_output_dir, &1),
+        &create_segments_for_resolution(resolutions_local_dir, video_segments_local_dir, &1),
         timeout: :infinity
       )
       |> Enum.into([])
@@ -60,10 +144,10 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
     end
   end
 
-  defp create_segments_for_resolution(resolutions_dir, hls_output_dir, video_file) do
+  defp create_segments_for_resolution(resolutions_local_dir, video_segments_local_dir, video_file) do
     resolution_name = Path.basename(video_file, ".mp4")
-    resolution_hls_dir = "#{hls_output_dir}/#{resolution_name}"
-    input_path = "#{resolutions_dir}/#{video_file}"
+    resolution_hls_dir = "#{video_segments_local_dir}/#{resolution_name}"
+    input_path = "#{resolutions_local_dir}/#{video_file}"
 
     hls_args = build_ffmpeg_hls_args(input_path, resolution_hls_dir)
 
@@ -97,7 +181,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
       "#{output_dir}/segment_%03d.ts"
     ]
 
-    output_playlist = ["#{output_dir}/playlist.m3u8"]
+    output_playlist = ["#{output_dir}/#{@resolution_playlist_filename}"]
 
     List.flatten([
       force_overwrite,
@@ -111,9 +195,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
     ])
   end
 
-  defp create_master_playlist(video_segments_dir) do
-    resolutions = ResolutionProcessor.get_available_video_resolutions()
-
+  defp create_master_playlist(video_segments_local_dir) do
     # This is the HLS master playlist format:
     #
     # #EXTM3U              - Indicates this is an M3U playlist file
@@ -135,10 +217,10 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
     content = """
     #EXTM3U
     #EXT-X-VERSION:3
-    #{build_master_playlist_entries(resolutions)}
+    #{build_master_playlist_entries()}
     """
 
-    File.write("#{video_segments_dir}/master.m3u8", content)
+    File.write("#{video_segments_local_dir}/#{@master_playlist_filename}", content)
   end
 
   # This function builds the entries for each quality in the master playlist:
@@ -151,11 +233,18 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
   #    - RESOLUTION: Video dimensions (e.g. 1280x720)
   #
   # 2. Path to that quality's playlist (e.g. 720p/playlist.m3u8)
-  defp build_master_playlist_entries(resolutions) do
-    Enum.map_join(resolutions, "\n", fn resolution ->
+  defp build_master_playlist_entries() do
+    available_resolutions = VideoConfig.video_resolutions()
+
+    available_resolutions
+    |> Map.keys()
+    |> Enum.sort(:desc)
+    |> Enum.map_join("\n", fn resolution_name ->
+      resolution = available_resolutions[resolution_name]
+
       """
       #EXT-X-STREAM-INF:BANDWIDTH=#{resolution.bandwidth},RESOLUTION=#{resolution.resolution}
-      #{resolution.name}/playlist.m3u8
+      #{resolution.name}/#{@resolution_playlist_filename}
       """
     end)
   end
