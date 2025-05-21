@@ -1,48 +1,60 @@
 defmodule Netflixir.Videos.Services.VideoService do
-  alias Netflixir.Utils.DirectoryAndFileUtils
+  alias Netflixir.Storage
+  alias Netflixir.Videos.VideoConfig
+  alias Netflixir.Videos.Externals.VideoExternal
 
-  @default_hls_dir "priv/static/videos/hls"
-  @default_master_playlist_name "master.m3u8"
+  @processed_videos_prefix "processed/"
+  @thumbnails_prefix "thumbnails/"
 
+  @spec list_available_videos() :: [VideoExternal.t()]
   def list_available_videos do
-    Path.wildcard("#{@default_hls_dir}/*")
-    |> Enum.map(fn dir ->
-      video_name = Path.basename(dir)
-      master_playlist = Path.join([dir, @default_master_playlist_name])
+    case Storage.list_files(VideoConfig.storage_bucket(), @processed_videos_prefix) do
+      {:ok, files} ->
+        files
+        |> Task.async_stream(
+          fn storage_path ->
+            created_at = get_file_date(storage_path)
+            thumbnail_url = get_thumbnail_url(storage_path)
+            VideoExternal.from_storage(storage_path, created_at, thumbnail_url)
+          end,
+          max_concurrency: 10,
+          timeout: :infinity
+        )
+        |> Enum.map(fn {:ok, video} -> video end)
 
-      if File.exists?(master_playlist) do
-        %{
-          id: video_name,
-          title: format_title(video_name),
-          created_at: DirectoryAndFileUtils.get_directory_creation_date(dir),
-          status: "Ready",
-          playlist_path: "/videos/hls/#{video_name}/#{@default_master_playlist_name}"
-        }
-      end
-    end)
-    |> Enum.reject(&is_nil/1)
+      {:error, _reason} ->
+        []
+    end
   end
 
-  defp format_title(filename) do
-    filename
-    |> String.replace("_", " ")
-    |> String.split()
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+  @spec get_video_by_id(String.t()) :: {:ok, VideoExternal.t()} | {:error, :not_found}
+  def get_video_by_id(video_id) do
+    processed_key = "#{@processed_videos_prefix}#{video_id}/master.m3u8"
+
+    case Storage.list_files(VideoConfig.storage_bucket(), processed_key) do
+      {:ok, [_ | _]} ->
+        created_at = get_file_date(processed_key)
+        thumbnail_url = get_thumbnail_url(video_id)
+        {:ok, VideoExternal.from_storage(video_id, created_at, thumbnail_url)}
+
+      _ ->
+        {:error, :not_found}
+    end
   end
 
-  def get_video_by_id!(video_id) do
-    video_dir = Path.join(["priv/static/videos/hls", video_id])
-    master_playlist = Path.join([video_dir, "master.m3u8"])
+  defp get_file_date(storage_path) do
+    case Storage.list_files(VideoConfig.storage_bucket(), storage_path) do
+      {:ok, [_ | _]} -> DateTime.utc_now() |> DateTime.to_string()
+      _ -> nil
+    end
+  end
 
-    if File.exists?(master_playlist) do
-      %{
-        id: video_id,
-        title: format_title(video_id),
-        playlist_path: "/videos/hls/#{video_id}/master.m3u8"
-      }
-    else
-      raise "Video not found"
+  defp get_thumbnail_url(video_id) do
+    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.jpg"
+
+    case Storage.list_files(VideoConfig.storage_bucket(), thumbnail_key) do
+      {:ok, [_ | _]} -> Storage.get_public_url(VideoConfig.storage_bucket(), thumbnail_key)
+      _ -> "/images/placeholder.jpg"
     end
   end
 end
