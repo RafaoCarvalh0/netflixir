@@ -17,10 +17,10 @@ defmodule NetflixirWeb.HomeLive do
   end
 
   defp get_thumbnail_path(video_id) do
-    thumbnail_path = Path.join(["priv", "static", "images", "thumbnails", "#{video_id}.jpg"])
+    thumbnail_path = Path.join(["priv", "static", "videos", "thumbnails", "#{video_id}.jpg"])
 
     if File.exists?(thumbnail_path) do
-      "/images/thumbnails/#{video_id}.jpg"
+      "/videos/thumbnails/#{video_id}.jpg"
     else
       "/images/placeholder.jpg"
     end
