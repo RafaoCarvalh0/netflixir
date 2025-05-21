@@ -5,7 +5,7 @@ defmodule Netflixir.Videos.RawVideoDownloader do
   """
 
   alias Netflixir.Storage
-  alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.DirectoryAndFileUtils
   alias Netflixir.Videos.VideoConfig
 
   @type raw_video_local_path :: String.t()
@@ -36,7 +36,9 @@ defmodule Netflixir.Videos.RawVideoDownloader do
     storage_key = @raw_videos_prefix <> video_name
 
     with {:ok, _} <-
-           DirectoryUtils.create_directory_if_not_exists(VideoConfig.raw_videos_local_path()),
+           DirectoryAndFileUtils.create_directory_if_not_exists(
+             VideoConfig.raw_videos_local_path()
+           ),
          {:ok, _} <- Storage.download(VideoConfig.storage_bucket(), storage_key, local_path) do
       {:ok, local_path}
     else

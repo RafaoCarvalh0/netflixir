@@ -3,7 +3,7 @@ defmodule Netflixir.Videos do
   The Videos context.
   Handles all video-related operations including listing, processing and streaming.
   """
-  alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.DirectoryAndFileUtils
 
   @default_hls_dir "priv/static/videos/hls"
   @default_master_playlist_name "master.m3u8"
@@ -18,7 +18,7 @@ defmodule Netflixir.Videos do
         %{
           id: video_name,
           title: format_title(video_name),
-          created_at: DirectoryUtils.get_directory_creation_date(dir),
+          created_at: DirectoryAndFileUtils.get_directory_creation_date(dir),
           status: "Ready",
           playlist_path: "/videos/hls/#{video_name}/#{@default_master_playlist_name}"
         }

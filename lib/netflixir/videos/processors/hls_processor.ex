@@ -24,7 +24,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
 
   """
   alias Netflixir.Storage
-  alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.DirectoryAndFileUtils
   alias Netflixir.Utils.FfmpegUtils
   alias Netflixir.Videos.VideoConfig
 
@@ -66,7 +66,8 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
     video_name = Path.basename(video_resolutions_local_dir)
     video_segments_local_dir = Path.join(VideoConfig.hls_local_path(), video_name)
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_segments_local_dir),
+    with {:ok, _} <-
+           DirectoryAndFileUtils.create_directory_if_not_exists(video_segments_local_dir),
          {:ok, _} <- create_hls_segments(video_resolutions_local_dir, video_segments_local_dir),
          :ok <- create_master_playlist(video_segments_local_dir),
          {:ok, storage_path} <- upload_segments(video_name, video_segments_local_dir) do
@@ -177,7 +178,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
 
     hls_args = build_ffmpeg_hls_args(input_path, resolution_hls_dir)
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(resolution_hls_dir),
+    with {:ok, _} <- DirectoryAndFileUtils.create_directory_if_not_exists(resolution_hls_dir),
          {:ok, :success} <- FfmpegUtils.run_ffmpeg(hls_args) do
       {:ok, resolution_hls_dir}
     else

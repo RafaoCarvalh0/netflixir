@@ -34,7 +34,7 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
   and network conditions.
   """
   alias Netflixir.Storage
-  alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.DirectoryAndFileUtils
   alias Netflixir.Utils.FfmpegUtils
   alias Netflixir.Videos.VideoConfig
 
@@ -71,7 +71,8 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
     video_name = Path.basename(transcoded_video_path, ".mp4")
     video_resolutions_local_dir = resolutions_local_path_for(video_name)
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_resolutions_local_dir),
+    with {:ok, _} <-
+           DirectoryAndFileUtils.create_directory_if_not_exists(video_resolutions_local_dir),
          {:ok, local_paths} <-
            create_resolutions(transcoded_video_path, video_resolutions_local_dir),
          {:ok, _storage_paths} <- upload_resolutions(video_name, local_paths) do
