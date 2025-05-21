@@ -31,8 +31,25 @@ defmodule Netflixir.Videos.Processors.Transcoder do
 
   @type transcoded_video :: String.t()
 
-  @spec transcode_raw_video(String.t()) :: {:ok, transcoded_video()} | {:error, String.t()}
-  def transcode_raw_video(raw_video) do
+  @doc """
+  Transcodes a raw video to H.264/MP4 format and adds an intro to it.
+
+  The function will:
+  1. Create the transcoded videos directory if it doesn't exist
+  2. Convert the video to H.264 codec with MP4 container
+  3. Add the configured intro video at the beginning
+  4. Maintain original video quality while scaling intro to match
+
+
+  ## Examples
+      iex> Transcoder.transcode_and_add_intro("priv/static/videos/raw/video1.mp4")
+      {:ok, "priv/static/videos/transcoded/video1.mp4"}
+
+      iex> Transcoder.transcode_and_add_intro("invalid.mp4")
+      {:error, "Failed to transcode video: file not found"}
+  """
+  @spec transcode_and_add_intro(String.t()) :: {:ok, transcoded_video()} | {:error, String.t()}
+  def transcode_and_add_intro(raw_video) do
     output_file_path = transcoded_file_path(raw_video)
     transcoded_videos_path = VideoConfig.transcoded_videos_local_path()
 
@@ -50,7 +67,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
 
   defp transcoded_file_path(raw_video) do
     output_file_base_name = Path.basename(raw_video)
-    Path.join(VideoConfig.transcoded_videos_local_path(), output_file_base_name)
+    Path.join(VideoConfig.transcoded_videos_local_path(), output_file_base_name) |> dbg()
   end
 
   defp transcode_with_intro(raw_video, output_path) do
@@ -68,46 +85,35 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     h264_codec_ffmpeg_lib = "libx264"
     intro_file = VideoConfig.intro_video_local_path()
 
+    # Input files order matters:
+    # First input (0): raw video
+    # Second input (1): intro
     input_files = [
       "-i",
-      intro_file,
+      raw_video,
       "-i",
-      raw_video
+      intro_file
     ]
 
     # Filter Complex: Video/audio processing pipeline
-    # [0:v] - First input (intro) video stream
-    # [1:v] - Second input (main video) video stream
+    # [0:v] - First input (raw video) video stream
+    # [1:v] - Second input (intro) video stream
     # [0:a] - First input audio stream
     # [1:a] - Second input audio stream
     #
-    # For intro video:
-    # 1. Scale to match the main video's dimensions using [1:v]'s width and height
-    # 2. force_original_aspect_ratio=decrease - Maintain original aspect ratio
-    # 3. pad to match main video's dimensions, centered
-    #
-    # For main video:
-    # Keep original dimensions, no scaling needed
-    #
-    # Concatenation:
-    # [v0][0:a][v1][1:a] - Takes streams in order: video1, audio1, video2, audio2
-    # concat=n=2:v=1:a=1 - Concatenates 2 inputs, generating 1 video and 1 audio
-    # [outv][outa] - Names output streams as 'outv' and 'outa'
+    # 1. Scale both videos to 1920x1080
+    # 2. Pad if needed to maintain aspect ratio
+    # 3. Concatenate intro followed by the main video
     filter_complex = [
       "-filter_complex",
-      "[1:v][0:v]scale2ref[v1][v0];
-       [v0]pad=iw:ih:(ow-iw)/2:(oh-ih)/2[padded_intro];
-       [padded_intro][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]"
+      "[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2[v0];
+       [1:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2[v1];
+       [v1][1:a][v0][0:a]concat=n=2:v=1:a=1[outv][outa]"
     ]
 
     # Output Mapping: Defines which streams to use in the final file
     # -map "[outv]" - Uses the processed video stream (after scale and concat)
     # -map "[outa]" - Uses the processed audio stream (after concat)
-    #
-    # This is necessary because:
-    # 1. We have multiple input streams (2 videos, 2 audios)
-    # 2. We process them in the filter_complex
-    # 3. We need to tell FFmpeg exactly which streams to use in the output
     output_map = [
       "-map",
       "[outv]",
@@ -116,18 +122,9 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     ]
 
     video_codec = ["-c:v", h264_codec_ffmpeg_lib]
-
-    # AAC has better quality, compatibility, compression and efficiency than MP3
-    audio_codec = ["-c:a", "aac"]
-
-    # 2 Megabits per second is a good compromise between quality and size
     video_bitrate = ["-b:v", "2M"]
-
-    # 128 kilobits per second is a good compromise between quality and size
+    audio_codec = ["-c:a", "aac"]
     audio_bitrate = ["-b:a", "128k"]
-
-    # The -preset defines the balance between compression velocity and quality
-    # Slow preset takes longer to transcode but produces a better quality video
     preset = ["-preset", "slow"]
 
     List.flatten([
