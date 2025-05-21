@@ -78,20 +78,23 @@ defmodule Netflixir.Storage do
   end
 
   @doc """
-  Gets the public URL for a file in the storage.
+  Gets a private presigned URL for a file in the storage.
+  Returns a presigned URL that is valid for 2 hours.
 
   ## Parameters
     - bucket: Storage bucket name
     - path: File path/name in the bucket
 
   ## Example
-      iex> Storage.get_public_url("my-bucket", "files/document.pdf")
-      "https://storage-endpoint.com/my-bucket/files/document.pdf"
+      iex> Storage.get_private_url("my-bucket", "files/document.pdf")
+      "https://storage-endpoint.com/my-bucket/files/document.pdf?..."
   """
-  @spec get_public_url(String.t(), String.t()) :: String.t()
-  def get_public_url(bucket, path) do
-    endpoint = Application.get_env(:ex_aws, :s3)[:host]
-    "https://#{endpoint}/#{bucket}/#{path}"
+  @spec get_private_url(String.t(), String.t()) :: String.t()
+  def get_private_url(bucket, path) do
+    {:ok, url} =
+      ExAws.S3.presigned_url(ExAws.Config.new(:s3), :get, bucket, path, expires_in: 7200)
+
+    url
   end
 
   @doc """

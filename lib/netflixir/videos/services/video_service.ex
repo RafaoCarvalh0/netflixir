@@ -30,7 +30,7 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec get_video_by_id(String.t()) :: {:ok, VideoExternal.t()} | {:error, :not_found}
   def get_video_by_id(video_id) do
-    processed_key = "#{@processed_videos_prefix}#{video_id}/master.m3u8"
+    processed_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
 
     case Storage.list_files(VideoConfig.storage_bucket(), processed_key) do
       {:ok, [_ | _]} ->
@@ -54,8 +54,11 @@ defmodule Netflixir.Videos.Services.VideoService do
     thumbnail_key = "#{@thumbnails_prefix}#{video_id}.jpg"
 
     case Storage.list_files(VideoConfig.storage_bucket(), thumbnail_key) do
-      {:ok, [_ | _]} -> Storage.get_public_url(VideoConfig.storage_bucket(), thumbnail_key)
-      _ -> "/images/placeholder.jpg"
+      {:ok, [_ | _]} ->
+        Storage.get_private_url(VideoConfig.storage_bucket(), thumbnail_key)
+
+      _ ->
+        "/images/placeholder.jpg"
     end
   end
 end
