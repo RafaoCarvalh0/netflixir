@@ -3,19 +3,20 @@ defmodule Netflixir.Videos.Services.VideoService do
   alias Netflixir.Videos.VideoConfig
   alias Netflixir.Videos.Externals.VideoExternal
 
-  @processed_videos_prefix "processed/"
+  @processed_videos_prefix "processed_videos/"
   @thumbnails_prefix "thumbnails/"
 
   @spec list_available_videos() :: [VideoExternal.t()]
   def list_available_videos do
-    case Storage.list_files(VideoConfig.storage_bucket(), @processed_videos_prefix) do
-      {:ok, files} ->
-        files
+    case Storage.list_directories(VideoConfig.storage_bucket(), @processed_videos_prefix) do
+      {:ok, directories} ->
+        directories
         |> Task.async_stream(
-          fn storage_path ->
-            created_at = get_file_date(storage_path)
-            thumbnail_url = get_thumbnail_url(storage_path)
-            VideoExternal.from_storage(storage_path, created_at, thumbnail_url)
+          fn directory ->
+            video_id = String.trim_trailing(Path.basename(directory), "/")
+            created_at = get_file_date(directory)
+            thumbnail_url = get_thumbnail_url(video_id)
+            VideoExternal.from_storage(directory, created_at, thumbnail_url)
           end,
           max_concurrency: 10,
           timeout: :infinity

@@ -4,7 +4,7 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
   Contains all the necessary fields for frontend display and interaction.
   """
 
-  @processed_videos_prefix "processed/"
+  @processed_videos_prefix "processed_videos/"
 
   @type t :: %__MODULE__{
           id: String.t(),
@@ -51,7 +51,8 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
 
   defp format_title(filename) do
     filename
-    |> String.replace("_", " ")
+    |> String.replace(~r/[_-]/, " ")
+    |> String.trim()
     |> String.split()
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
