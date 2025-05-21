@@ -24,8 +24,8 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
     :status
   ]
 
-  @spec from_storage(String.t(), String.t() | nil, String.t()) :: t()
-  def from_storage(storage_path, created_at, thumbnail_url) do
+  @spec from_storage(String.t(), String.t() | nil, String.t(), String.t()) :: t()
+  def from_storage(storage_path, created_at, thumbnail_url, playlist_path) do
     video_id = extract_video_name(storage_path)
 
     %__MODULE__{
@@ -33,7 +33,7 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
       title: format_title(video_id),
       created_at: created_at,
       status: "Ready",
-      playlist_path: "/videos/hls/#{video_id}/master.m3u8",
+      playlist_path: playlist_path,
       thumbnail: thumbnail_url
     }
   end

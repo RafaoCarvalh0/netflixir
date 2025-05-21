@@ -16,7 +16,10 @@ defmodule Netflixir.Videos.Services.VideoService do
             video_id = String.trim_trailing(Path.basename(directory), "/")
             created_at = get_file_date(directory)
             thumbnail_url = get_thumbnail_url(video_id)
-            VideoExternal.from_storage(directory, created_at, thumbnail_url)
+            playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
+            playlist_path = Storage.get_private_url(VideoConfig.storage_bucket(), playlist_key)
+
+            VideoExternal.from_storage(directory, created_at, thumbnail_url, playlist_path)
           end,
           max_concurrency: 10,
           timeout: :infinity
@@ -30,17 +33,20 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec get_video_by_id(String.t()) :: {:ok, VideoExternal.t()} | {:error, :not_found}
   def get_video_by_id(video_id) do
-    processed_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
+    playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
 
-    case Storage.list_files(VideoConfig.storage_bucket(), processed_key) do
+    case Storage.list_files(VideoConfig.storage_bucket(), playlist_key) do
       {:ok, [_ | _]} ->
-        created_at = get_file_date(processed_key)
+        created_at = get_file_date(playlist_key)
         thumbnail_url = get_thumbnail_url(video_id)
-        {:ok, VideoExternal.from_storage(video_id, created_at, thumbnail_url)}
+        playlist_path = Storage.get_private_url(VideoConfig.storage_bucket(), playlist_key)
+
+        {:ok, VideoExternal.from_storage(video_id, created_at, thumbnail_url, playlist_path)}
 
       _ ->
         {:error, :not_found}
     end
+    |> dbg()
   end
 
   defp get_file_date(storage_path) do

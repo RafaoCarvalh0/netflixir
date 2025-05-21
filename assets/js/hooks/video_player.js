@@ -2,18 +2,50 @@
 const VideoPlayer = {
     mounted() {
         const video = this.el;
+        const playlistUrl = video.dataset.src;
 
         if (Hls.isSupported()) {
             const hls = new Hls({
                 startLevel: -1, // Start with auto quality
-                capLevelToPlayerSize: true
+                capLevelToPlayerSize: true,
+                xhrSetup: (xhr, url) => {
+                    // If the URL is already presigned, use it as is
+                    if (url.includes('?')) {
+                        return;
+                    }
+                    // Otherwise, try to use the base playlist URL's signature
+                    const urlObj = new URL(playlistUrl);
+                    const signature = urlObj.search;
+                    if (signature) {
+                        xhr.open('GET', `${url}${signature}`, true);
+                    }
+                }
             });
 
-            hls.loadSource(video.dataset.src);
+            hls.loadSource(playlistUrl);
             hls.attachMedia(video);
 
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    switch (data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            console.error('Network error:', data);
+                            hls.startLoad();
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            console.error('Media error:', data);
+                            hls.recoverMediaError();
+                            break;
+                        default:
+                            console.error('Unrecoverable error:', data);
+                            hls.destroy();
+                            break;
+                    }
+                }
+            });
+
             // Handle quality selection
-            document.querySelector('select').addEventListener('change', (e) => {
+            document.querySelector('select')?.addEventListener('change', (e) => {
                 const quality = e.target.value;
 
                 if (quality === 'auto') {
@@ -33,6 +65,9 @@ const VideoPlayer = {
 
             // Store HLS instance for cleanup
             this.hls = hls;
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // For Safari on iOS
+            video.src = playlistUrl;
         }
     },
 

@@ -58,7 +58,8 @@ defmodule Netflixir.MixProject do
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
       {:sweet_xml, "~> 0.7"},
-      {:hackney, "~> 1.18"}
+      {:hackney, "~> 1.18"},
+      {:cors_plug, "~> 3.0"}
     ]
   end
 

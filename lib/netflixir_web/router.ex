@@ -8,6 +8,7 @@ defmodule NetflixirWeb.Router do
     plug :put_root_layout, html: {NetflixirWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug CORSPlug, origin: "*"
   end
 
   pipeline :api do
