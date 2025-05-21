@@ -26,6 +26,7 @@ defmodule Netflixir.Videos.VideoProcessingPipeline do
   alias Netflixir.Videos.Processors.HlsProcessor
   alias Netflixir.Videos.Processors.ResolutionProcessor
   alias Netflixir.Videos.Processors.Transcoder
+  alias Netflixir.Videos.Processors.LocalCleanup
 
   @type process_result :: %{
           hls_storage_path: String.t()
@@ -37,7 +38,8 @@ defmodule Netflixir.Videos.VideoProcessingPipeline do
          {:ok, video_resolutions_local_dir} <-
            ResolutionProcessor.create_video_resolutions(transcoded_video),
          {:ok, hls_storage_path} <-
-           HlsProcessor.create_video_segments(video_resolutions_local_dir) do
+           HlsProcessor.create_video_segments(video_resolutions_local_dir),
+         {:ok, _} <- LocalCleanup.delete_video_local_files(transcoded_video) do
       {:ok,
        %{
          hls_storage_path: hls_storage_path

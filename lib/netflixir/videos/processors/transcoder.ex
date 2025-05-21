@@ -25,7 +25,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
 
   It also adds the intro to the video.
   """
-  alias Netflixir.Utils.DirectoryUtils
+  alias Netflixir.Utils.DirectoryAndFileUtils
   alias Netflixir.Utils.FfmpegUtils
   alias Netflixir.Videos.VideoConfig
 
@@ -53,7 +53,7 @@ defmodule Netflixir.Videos.Processors.Transcoder do
     output_file_path = transcoded_file_path(raw_video)
     transcoded_videos_path = VideoConfig.transcoded_videos_local_path()
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(transcoded_videos_path),
+    with {:ok, _} <- DirectoryAndFileUtils.create_directory_if_not_exists(transcoded_videos_path),
          {:ok, transcoded_video} <- transcode_with_intro(raw_video, output_file_path) do
       {:ok, transcoded_video}
     else
