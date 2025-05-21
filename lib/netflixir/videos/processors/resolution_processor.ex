@@ -40,18 +40,42 @@ defmodule Netflixir.Videos.Processors.ResolutionProcessor do
 
   @type resolution_path :: String.t()
   @type resolution_storage_path :: String.t()
+  @type video_resolutions_local_dir :: String.t()
 
+  @doc """
+  Creates and uploads multiple resolution variants of a transcoded video.
+
+  Takes a transcoded H.264/MP4 video and:
+  1. Creates a directory for the resolution variants
+  2. Generates each resolution in parallel using ffmpeg
+  3. Uploads each resolution to storage in parallel
+
+  The resolutions are defined in the application config and typically include:
+  - 1080p (1920x1080) at 5Mbps
+  - 720p (1280x720) at 2.8Mbps
+  - 480p (854x480) at 1.4Mbps
+  - And others...
+
+  Returns the local directory path containing the resolution variants.
+  The resolutions are also uploaded to storage but the paths are not returned.
+
+  ## Example
+      iex> transcoded_video_path = "priv/static/videos/transcoded/my_video.mp4"
+      iex> ResolutionProcessor.create_video_resolutions(video_path)
+      iex> {:ok, "priv/static/videos/resolutions/my_video"}
+  """
   @spec create_video_resolutions(String.t()) ::
-          {:ok, [resolution_storage_path()]}
+          {:ok, video_resolutions_local_dir()}
           | {:error, String.t()}
   def create_video_resolutions(transcoded_video_path) do
     video_name = Path.basename(transcoded_video_path, ".mp4")
-    resolutions_dir = resolutions_local_path_for(video_name)
+    video_resolutions_local_dir = resolutions_local_path_for(video_name)
 
-    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(resolutions_dir),
-         {:ok, local_paths} <- create_resolutions(transcoded_video_path, resolutions_dir),
-         {:ok, storage_paths} <- upload_resolutions(video_name, local_paths) do
-      {:ok, storage_paths}
+    with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_resolutions_local_dir),
+         {:ok, local_paths} <-
+           create_resolutions(transcoded_video_path, video_resolutions_local_dir),
+         {:ok, _storage_paths} <- upload_resolutions(video_name, local_paths) do
+      {:ok, video_resolutions_local_dir}
     else
       {:error, reason} -> {:error, "Failed to create video resolutions: #{reason}"}
     end

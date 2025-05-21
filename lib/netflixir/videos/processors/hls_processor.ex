@@ -35,13 +35,39 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
   @resolution_playlist_filename "playlist.m3u8"
   @segment_file_extension ".ts"
 
+  @doc """
+  Creates HLS segments and playlists from video resolution variants and uploads them to storage.
+
+  Takes a directory containing the resolution variants of a specific video and:
+  1. Creates a directory for HLS segments and playlists
+  2. Segments each resolution variant into HLS chunks (6 seconds each)
+  3. Creates resolution-specific playlists
+  4. Creates a master playlist linking all resolutions
+  5. Uploads all segments and playlists to storage
+
+  The input directory must be the one containing the resolution variants of a specific video,
+  typically created by the ResolutionProcessor.
+
+  Returns the base storage path where all HLS content was uploaded.
+
+  ## Example
+      iex> video_resolutions_dir = "priv/static/videos/resolutions/my_video"
+      iex> {:ok, storage_path} = HlsProcessor.create_video_segments(video_resolutions_dir)
+      iex> storage_path
+      "processed_videos/my_video/hls"
+      # This path will contain:
+      # - master.m3u8
+      # - 1080p/playlist.m3u8 + segments
+      # - 720p/playlist.m3u8 + segments
+      # - etc...
+  """
   @spec create_video_segments(String.t()) :: {:ok, segments_storage_path()} | {:error, String.t()}
-  def create_video_segments(resolutions_local_dir) do
-    video_name = Path.basename(resolutions_local_dir)
+  def create_video_segments(video_resolutions_local_dir) do
+    video_name = Path.basename(video_resolutions_local_dir)
     video_segments_local_dir = Path.join(VideoConfig.hls_local_path(), video_name)
 
     with {:ok, _} <- DirectoryUtils.create_directory_if_not_exists(video_segments_local_dir),
-         {:ok, _} <- create_hls_segments(resolutions_local_dir, video_segments_local_dir),
+         {:ok, _} <- create_hls_segments(video_resolutions_local_dir, video_segments_local_dir),
          :ok <- create_master_playlist(video_segments_local_dir),
          {:ok, storage_path} <- upload_segments(video_name, video_segments_local_dir) do
       {:ok, storage_path}
