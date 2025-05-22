@@ -8,23 +8,22 @@ const VideoPlayer = {
             const hls = new Hls({
                 startLevel: -1, // Start with auto quality
                 capLevelToPlayerSize: true,
-                xhrSetup: (xhr, url) => {
+                xhrSetup: async (xhr, url) => {
                     // Se a URL já tem uma assinatura, usa ela como está
                     if (url.includes('?')) {
                         return;
                     }
 
-                    // Extrai o caminho base da URL do master playlist
+                    // Extrai o caminho relativo do arquivo no storage
                     const masterUrlObj = new URL(playlistUrl);
-                    const masterBasePath = masterUrlObj.pathname.split('/').slice(0, -1).join('/');
+                    const basePath = masterUrlObj.pathname.split('/netflixir/')[1];
+                    const currentPath = new URL(url).pathname.split('/netflixir/')[1];
 
-                    // Extrai o caminho relativo da URL atual
-                    const currentUrlObj = new URL(url);
-                    const relativePath = currentUrlObj.pathname.split('/').pop();
+                    // Solicita uma URL assinada para este arquivo específico
+                    const response = await this.pushEventTo(this.el, "get_signed_url", { path: currentPath });
 
-                    // Constrói a URL completa com a assinatura do master playlist
-                    const fullUrl = `${masterUrlObj.origin}${masterBasePath}/${relativePath}${masterUrlObj.search}`;
-                    xhr.open('GET', fullUrl, true);
+                    // Usa a URL assinada retornada pelo backend
+                    xhr.open('GET', response.url, true);
                 }
             });
 
