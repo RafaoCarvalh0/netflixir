@@ -3,6 +3,8 @@ defmodule Netflixir.Videos.Services.VideoService do
   alias Netflixir.Videos.VideoConfig
   alias Netflixir.Videos.Externals.VideoExternal
 
+  @one_week_in_seconds 604_800
+  @placeholder_image_path "/images/placeholder.jpg"
   @processed_videos_prefix "processed_videos/"
   @thumbnails_prefix "thumbnails/"
 
@@ -13,13 +15,9 @@ defmodule Netflixir.Videos.Services.VideoService do
         directories
         |> Task.async_stream(
           fn directory ->
-            video_id = String.trim_trailing(Path.basename(directory), "/")
-            created_at = get_file_date(directory)
-            thumbnail_url = get_thumbnail_url(video_id)
-            playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
-            playlist_path = get_signed_url(playlist_key)
-
-            VideoExternal.from_storage(directory, created_at, thumbnail_url, playlist_path)
+            video_id = get_video_name(directory)
+            {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
+            VideoExternal.new(video_id, created_at, playlist_path, thumbnail)
           end,
           max_concurrency: 10,
           timeout: :infinity
@@ -33,21 +31,38 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec get_video_by_id(String.t()) :: {:ok, VideoExternal.t()} | {:error, :not_found}
   def get_video_by_id(video_id) do
-    playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
+    directory = "#{@processed_videos_prefix}#{video_id}/"
 
-    case Storage.list_files(VideoConfig.storage_bucket(), playlist_key) do
+    case Storage.list_files(VideoConfig.storage_bucket(), directory) do
       {:ok, [_ | _]} ->
-        created_at = get_file_date(playlist_key)
-        thumbnail_url = get_thumbnail_url(video_id)
-        playlist_path = get_signed_url(playlist_key)
-
-        {:ok, VideoExternal.from_storage(video_id, created_at, thumbnail_url, playlist_path)}
+        {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
+        {:ok, VideoExternal.new(video_id, created_at, playlist_path, thumbnail)}
 
       _ ->
         {:error, :not_found}
     end
   end
 
+  defp get_video_external_attrs(directory, video_id) do
+    {
+      get_file_date(directory),
+      get_playlist_path(video_id),
+      get_thumbnail_url(video_id)
+    }
+  end
+
+  defp get_video_name(storage_path) do
+    if String.contains?(storage_path, @processed_videos_prefix) do
+      storage_path
+      |> String.replace(@processed_videos_prefix, "")
+      |> String.split("/")
+      |> List.first()
+    else
+      Path.basename(storage_path, "/")
+    end
+  end
+
+  @spec get_file_date(String.t()) :: String.t() | nil
   defp get_file_date(storage_path) do
     case Storage.list_files(VideoConfig.storage_bucket(), storage_path) do
       {:ok, [_ | _]} -> DateTime.utc_now() |> DateTime.to_string()
@@ -55,19 +70,42 @@ defmodule Netflixir.Videos.Services.VideoService do
     end
   end
 
-  defp get_thumbnail_url(video_id) do
-    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.jpg"
-
-    case Storage.list_files(VideoConfig.storage_bucket(), thumbnail_key) do
-      {:ok, [_ | _]} ->
-        get_signed_url(thumbnail_key)
-
-      _ ->
-        "/images/placeholder.jpg"
+  @spec get_signed_url(String.t()) :: String.t() | nil
+  defp get_signed_url(key) do
+    case Storage.get_private_url(VideoConfig.storage_bucket(), key) do
+      {:ok, url} -> url
+      {:error, _} -> nil
     end
   end
 
-  defp get_signed_url(key) do
-    Storage.get_private_url(VideoConfig.storage_bucket(), key)
+  defp get_playlist_path(video_id) do
+    playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
+    get_signed_url(playlist_key)
+  end
+
+  @spec get_thumbnail_url(String.t()) :: String.t()
+  defp get_thumbnail_url(video_id) do
+    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.jpg"
+
+    with {:ok, [file | _]} <- Storage.list_files(VideoConfig.storage_bucket(), thumbnail_key),
+         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, file) do
+      url
+    else
+      _ -> @placeholder_image_path
+    end
+  end
+
+  defp generate_cached_thumbnail_url(key, file) do
+    cache_hash = generate_cache_hash(file)
+    Storage.get_cached_url(VideoConfig.storage_bucket(), key, @one_week_in_seconds, cache_hash)
+  end
+
+  defp generate_cache_hash(file) do
+    last_modified = Map.get(file, :last_modified, DateTime.utc_now())
+    size = Map.get(file, :size, 0)
+
+    :crypto.hash(:md5, "#{last_modified}#{size}")
+    |> Base.encode16(case: :lower)
+    |> binary_part(0, 8)
   end
 end

@@ -87,14 +87,46 @@ defmodule Netflixir.Storage do
 
   ## Example
       iex> Storage.get_private_url("my-bucket", "files/document.pdf")
-      "https://storage-endpoint.com/my-bucket/files/document.pdf?..."
+      {:ok, "https://storage-endpoint.com/my-bucket/files/document.pdf?..."}
   """
-  @spec get_private_url(String.t(), String.t()) :: String.t()
+  @spec get_private_url(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
   def get_private_url(bucket, path) do
-    {:ok, url} =
-      ExAws.S3.presigned_url(ExAws.Config.new(:s3), :get, bucket, path, expires_in: 7200)
+    config = Application.get_env(:ex_aws, :s3)
+    two_hours_in_seconds = 7200
 
-    url
+    ExAws.S3.presigned_url(config, :get, bucket, path, expires_in: two_hours_in_seconds)
+  end
+
+  @doc """
+  Gets a cached presigned URL for a file in the storage.
+  Returns a presigned URL with cache control headers and cache hash for invalidation.
+
+  ## Parameters
+    - bucket: Storage bucket name
+    - path: File path/name in the bucket
+    - expires_in: URL expiration time in seconds
+    - cache_hash: Hash for cache invalidation
+
+  ## Example
+      iex> Storage.get_cached_url("my-bucket", "images/photo.jpg", 3600, "abc123")
+      {:ok, "https://storage-endpoint.com/my-bucket/images/photo.jpg?..."}
+  """
+  @spec get_cached_url(String.t(), String.t(), pos_integer(), String.t()) ::
+          {:ok, String.t()} | {:error, term()}
+  def get_cached_url(bucket, path, expires_in, cache_hash) do
+    query_params = %{
+      "response-cache-control" => "public, max-age=#{expires_in}, immutable",
+      "response-expires" =>
+        DateTime.utc_now() |> DateTime.add(expires_in, :second) |> DateTime.to_string(),
+      "v" => cache_hash
+    }
+
+    config = Application.get_env(:ex_aws, :s3)
+
+    ExAws.S3.presigned_url(config, :get, bucket, path,
+      expires_in: expires_in,
+      query_params: query_params
+    )
   end
 
   @doc """

@@ -4,8 +4,6 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
   Contains all the necessary fields for frontend display and interaction.
   """
 
-  @processed_videos_prefix "processed_videos/"
-
   @type t :: %__MODULE__{
           id: String.t(),
           title: String.t(),
@@ -24,29 +22,16 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
     :status
   ]
 
-  @spec from_storage(String.t(), String.t() | nil, String.t(), String.t()) :: t()
-  def from_storage(storage_path, created_at, thumbnail_url, playlist_path) do
-    video_id = extract_video_name(storage_path)
-
+  @spec new(String.t(), String.t(), String.t(), String.t()) :: t()
+  def new(video_id, created_at, playlist_path, thumbnail) do
     %__MODULE__{
       id: video_id,
       title: format_title(video_id),
       created_at: created_at,
       status: "Ready",
       playlist_path: playlist_path,
-      thumbnail: thumbnail_url
+      thumbnail: thumbnail
     }
-  end
-
-  defp extract_video_name(storage_path) do
-    if String.contains?(storage_path, @processed_videos_prefix) do
-      storage_path
-      |> String.replace(@processed_videos_prefix, "")
-      |> String.split("/")
-      |> List.first()
-    else
-      storage_path
-    end
   end
 
   defp format_title(filename) do
