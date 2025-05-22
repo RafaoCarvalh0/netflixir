@@ -1,81 +1,116 @@
 # Netflixir
 
-Um projeto de estudo pessoal que visa compreender e replicar as técnicas de streaming de vídeo utilizadas pela Netflix, implementado com Elixir e Phoenix LiveView.
+A personal study project that implements video streaming techniques similar to Netflix, built with Elixir and Phoenix LiveView.
 
-## Sobre o Projeto
+🔗 **[Live Demo - NETFLIXIR](https://netflixir.gigalixirapp.com/)**
 
-Este é um desafio pessoal para entender profundamente como funciona o processo de streaming adaptativo de vídeos, similar ao utilizado pela Netflix. O projeto utiliza Elixir para o backend devido à sua excelente capacidade de lidar com streams e concorrência, e Phoenix LiveView para criar uma interface reativa em tempo real.
+[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
 
-### MVP (Minimum Viable Product)
-- Streaming de vídeo com qualidade adaptativa baseada na conexão do usuário
-- Interface para seleção manual da qualidade do vídeo
+### ⚠️ Important Notice
+> Due to Backblaze B2 free tier limitations, videos might be temporarily unavailable if the data transfer limit has been reached. The transfer quota is reset every 24 hours at 21:00 (Brasília Time, UTC-3).
 
-### Stack Tecnológica
+### 🎮 Become "The only thing they fear"
+> **Did you know?** When videos are unavailable, try accessing the website through your browser - you might discover a (not very) hidden surprise! 🕹️ ✨
+
+## About
+
+This project aims to understand and implement adaptive video streaming techniques, with a strong focus on backend development and video processing infrastructure. 
+
+The project follows several software development principles and patterns to ensure maintainability and scalability:
+
+### Development Principles
+- **Domain-Driven Design (DDD)**: Clear separation of concerns with well-defined bounded contexts
+- **Dependency Injection**: Flexible component coupling through behavior injection
+- **DRY (Don't Repeat Yourself)**: Code reusability and maintainability
+- **Clean Code Principles**:
+  - Meaningful naming conventions
+  - Single Responsibility Principle
+  - Small, focused functions
+  - Clear and descriptive documentation
+  - Consistent code formatting
+- **Test-Driven Development**:
+  - Comprehensive test coverage
+  - Behavior-driven development
+  - Clear test organization
+- **Architecture**:
+  - Well-defined boundaries between layers
+  - Clear separation between video processing, storage, and web interface
+  - Modular and extensible design
+
+The frontend implementation was largely assisted by AI, with code design decisions being made by the developer. JavaScript and HTML templates were mostly implemented by AI with minimal intervention, as the focus was on backend functionality. It currently focuses on serving a single video with multiple quality options, allowing users to experience how adaptive streaming works.
+
+### Current MVP Features
+- Video streaming with multiple quality options
+- Manual quality selection interface
+- HLS (HTTP Live Streaming) implementation
+- Adaptive bitrate streaming support
+- Video processing pipeline with multiple resolutions
+
+### Tech Stack
 - **Backend**: Elixir + Phoenix
 - **Frontend**: Phoenix LiveView + TailwindCSS
-- **Processamento de Vídeo**: FFmpeg
-- **Banco de Dados**: PostgreSQL
+- **Video Processing**: FFmpeg
+- **Storage**: Backblaze B2 (Free Tier)
+- **Deployment**: Gigalixir
+- **Database**: PostgreSQL (configured but not currently in use)
 
-### Nota sobre o Frontend
-quase toda interface do usuário foi desenvolvida com auxílio de IA, já que o foco principal do projeto é a implementação do backend e o entendimento do processo de streaming. O design foi inspirado na interface da Netflix.
+### Infrastructure
+- **Storage**: Using Backblaze B2's free tier (10GB) for video storage
+- **Hosting**: Deployed on Gigalixir's free tier
+- **Database**: PostgreSQL is configured for future features but not currently utilized
 
-## Pré-requisitos
+## Development Setup
 
-  * Elixir e Erlang instalados (recomendado via `asdf install`)
-  * FFmpeg instalado (necessário para processamento de vídeo)
+### Prerequisites
+- Elixir and Erlang (recommended via `asdf install`)
+- FFmpeg (required for video processing)
+- PostgreSQL (configured but optional for current MVP)
 
-## Configuração Inicial
-
-1. Clone o repositório
-2. Instale as dependências:
+### Local Setup
+1. Clone the repository
+2. Install dependencies:
 ```bash
 mix setup
 ```
-3. Configure o banco de dados em `config/dev.exs`
-4. Inicie o servidor:
+3. Configure environment variables:
+```bash
+# Required for Backblaze B2 storage
+export STORAGE_BUCKET="your-backblaze-bucket"
+export B2_KEY_ID="your-backblaze-key-id"
+export B2_APP_KEY="your-backblaze-application-key"
+export B2_REGION="your-backblaze-region"
+export B2_HOST="your-backblaze-host"
+export B2_PORT="your-backblaze-port"
+```
+4. Start the server:
 ```bash
 mix phx.server
 ```
 
-O servidor estará disponível em [`localhost:4000`](http://localhost:4000)
+The server will be available at [`localhost:4000`](http://localhost:4000)
 
-### (SERÁ DEPRECIADO) Caso deseje processar um video manualmente
+## Video Processing Pipeline
 
-1. Coloque seu vídeo MP4 na pasta `priv/static/uploads/raw/`, por exemplo: `meu_video.mp4`
+The project implements a complete video processing pipeline that:
+1. Transcodes the input video to an optimized format
+2. Creates multiple resolution variants (1080p, 720p, 480p, 360p, 240p, 144p)
+3. Generates HLS segments and playlists
+4. Organizes files in the correct structure for streaming
+5. Uploads processed content to Backblaze B2
 
-2. (Opcional) Se desejar usar uma thumbnail personalizada, coloque uma imagem JPG com o mesmo nome base do vídeo em `priv/static/uploads/videos/thumbnails/`, exemplo: `meu_video.jpg`
+## Learning Resources
 
-3. Abra o console do IEx:
-```bash
-iex -S mix
-```
-
-4. Execute o processamento usando o StreamPackager:
-```elixir
-# No console do IEx
-alias Netflixir.Videos.StreamPackager
-StreamPackager.process_video("priv/static/uploads/raw/meu_video.mp4")
-```
-
-O StreamPackager irá automaticamente:
-- Transcodificar o vídeo para um formato otimizado
-- Criar múltiplas resoluções (1080p, 720p, 480p, 360p, 240p, 144p)
-- Gerar os segmentos HLS e playlists
-- Organizar os arquivos na estrutura correta para streaming
-
-Após o processamento terminar, o vídeo já estará disponível para streaming adaptativo através da interface web em [`localhost:4000`](http://localhost:4000).
-
-
-## Contribuições
-
-Este é um projeto de estudo pessoal, mas sugestões e contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.
-
-## Aprendizados e Documentação
-
-Para entender mais sobre as tecnologias utilizadas:
-
+To learn more about the technologies used:
 * [Phoenix Framework](https://www.phoenixframework.org/)
 * [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html)
 * [FFmpeg](https://ffmpeg.org/documentation.html)
 * [HLS Streaming](https://developer.apple.com/streaming/)
+* [Backblaze B2](https://www.backblaze.com/b2/docs/)
+* [Gigalixir](https://gigalixir.com/docs)
+
+This project also leveraged AI technologies extensively during development, which proved invaluable for learning, problem-solving, and understanding complex streaming concepts. AI assistance helped in making architectural decisions, debugging issues, and implementing best practices.
+
+## Contributing
+
+This is a personal study project, but suggestions and contributions are welcome! Feel free to open issues or submit pull requests.
 
