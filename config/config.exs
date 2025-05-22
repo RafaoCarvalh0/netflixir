@@ -9,7 +9,8 @@ import Config
 
 config :netflixir,
   ecto_repos: [Netflixir.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  storage_module: Netflixir.Storage.ExAws
 
 # Configures the endpoint
 config :netflixir, NetflixirWeb.Endpoint,
@@ -109,13 +110,3 @@ config :netflixir, :videos,
       bandwidth: "200000"
     }
   }
-
-config :ex_aws,
-  access_key_id: System.get_env("B2_KEY_ID"),
-  secret_access_key: System.get_env("B2_APP_KEY"),
-  region: System.get_env("B2_REGION"),
-  s3: [
-    scheme: "https://",
-    host: System.get_env("B2_HOST"),
-    port: System.get_env("B2_PORT")
-  ]

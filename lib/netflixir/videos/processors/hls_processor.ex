@@ -90,7 +90,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
     local_path = Path.join(video_segments_local_dir, @master_playlist_filename)
     storage_key = "#{storage_base_path}/#{@master_playlist_filename}"
 
-    Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key)
+    Storage.upload(local_path, storage_key)
   end
 
   defp upload_resolution_segments(video_segments_local_dir, storage_base_path) do
@@ -126,7 +126,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
     local_path = Path.join(resolution_dir, @resolution_playlist_filename)
     storage_key = "#{resolution_storage_path}/#{@resolution_playlist_filename}"
 
-    case Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key) do
+    case Storage.upload(local_path, storage_key) do
       {:ok, _} -> :ok
       error -> error
     end
@@ -142,7 +142,7 @@ defmodule Netflixir.Videos.Processors.HlsProcessor do
           local_path = Path.join(resolution_dir, segment_file)
           storage_key = "#{resolution_storage_path}/#{segment_file}"
 
-          Storage.upload(local_path, VideoConfig.storage_bucket(), storage_key)
+          Storage.upload(local_path, storage_key)
         end,
         timeout: :infinity
       )

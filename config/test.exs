@@ -30,6 +30,23 @@ config :phoenix, :plug_init_mode, :runtime
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
 
+# Storage configuration for tests
+config :netflixir,
+  storage_bucket: "test-bucket",
+  storage_module: Netflixir.Storage.Mock
+
+# ExAws configuration for tests
+config :ex_aws,
+  json_codec: Jason,
+  access_key_id: "test_key_id",
+  secret_access_key: "test_secret_key",
+  region: "test-region"
+
+config :ex_aws, :s3,
+  scheme: "https://",
+  host: "test.storage.com",
+  port: 443
+
 config :netflixir, :video_resolutions, [
   %{
     name: "360p",

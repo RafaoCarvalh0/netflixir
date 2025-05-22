@@ -2,8 +2,6 @@ defmodule NetflixirWeb.WatchLive do
   use NetflixirWeb, :live_view
 
   alias Netflixir.Videos.Services.VideoService
-  alias Netflixir.Storage
-  alias Netflixir.Videos.VideoConfig
 
   @impl true
   def mount(%{"id" => video_id}, _session, socket) do
@@ -29,7 +27,7 @@ defmodule NetflixirWeb.WatchLive do
 
   @impl true
   def handle_event("get_signed_url", %{"path" => path}, socket) do
-    signed_url = Storage.get_private_url(VideoConfig.storage_bucket(), path)
-    {:reply, %{url: signed_url}, socket}
+    url = VideoService.get_signed_url(path)
+    {:reply, %{url: url}, socket}
   end
 end

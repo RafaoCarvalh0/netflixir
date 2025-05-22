@@ -1,6 +1,5 @@
 defmodule Netflixir.Videos.Services.VideoService do
   alias Netflixir.Storage
-  alias Netflixir.Videos.VideoConfig
   alias Netflixir.Videos.Externals.VideoExternal
 
   @one_week_in_seconds 604_800
@@ -10,7 +9,7 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec list_available_videos() :: [VideoExternal.t()]
   def list_available_videos do
-    case Storage.list_directories(VideoConfig.storage_bucket(), @processed_videos_prefix) do
+    case Storage.list_directories(@processed_videos_prefix) do
       {:ok, directories} ->
         directories
         |> Task.async_stream(
@@ -33,8 +32,8 @@ defmodule Netflixir.Videos.Services.VideoService do
   def get_video_by_id(video_id) do
     directory = "#{@processed_videos_prefix}#{video_id}/"
 
-    case Storage.list_files(VideoConfig.storage_bucket(), directory) do
-      {:ok, [_ | _]} ->
+    case Storage.list_files(directory) do
+      {:ok, [%{key: _} | _]} ->
         {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
         {:ok, VideoExternal.from_storage(video_id, created_at, playlist_path, thumbnail)}
 
@@ -64,15 +63,15 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec get_file_date(String.t()) :: String.t() | nil
   defp get_file_date(storage_path) do
-    case Storage.list_files(VideoConfig.storage_bucket(), storage_path) do
-      {:ok, [_ | _]} -> DateTime.utc_now() |> DateTime.to_string()
+    case Storage.list_files(storage_path) do
+      {:ok, [%{last_modified: last_modified} | _]} -> last_modified
       _ -> nil
     end
   end
 
   @spec get_signed_url(String.t()) :: String.t() | nil
-  defp get_signed_url(key) do
-    case Storage.get_private_url(VideoConfig.storage_bucket(), key) do
+  def get_signed_url(key) do
+    case Storage.get_private_url(key) do
       {:ok, url} -> url
       {:error, _} -> nil
     end
@@ -87,8 +86,8 @@ defmodule Netflixir.Videos.Services.VideoService do
   defp get_thumbnail_url(video_id) do
     thumbnail_key = "#{@thumbnails_prefix}#{video_id}.jpg"
 
-    with {:ok, [file | _]} <- Storage.list_files(VideoConfig.storage_bucket(), thumbnail_key),
-         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, file) do
+    with {:ok, [%{size: size} | _]} <- Storage.list_files(thumbnail_key),
+         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, %{size: size}) do
       url
     else
       _ -> @placeholder_image_path
@@ -97,7 +96,7 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   defp generate_cached_thumbnail_url(key, file) do
     cache_hash = generate_cache_hash(file)
-    Storage.get_cached_url(VideoConfig.storage_bucket(), key, @one_week_in_seconds, cache_hash)
+    Storage.get_cached_url(key, @one_week_in_seconds, cache_hash)
   end
 
   defp generate_cache_hash(file) do

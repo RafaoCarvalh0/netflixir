@@ -39,7 +39,7 @@ defmodule Netflixir.Videos.RawVideoDownloader do
            DirectoryAndFileUtils.create_directory_if_not_exists(
              VideoConfig.raw_videos_local_path()
            ),
-         {:ok, _} <- Storage.download(VideoConfig.storage_bucket(), storage_key, local_path) do
+         {:ok, _} <- Storage.download(storage_key, local_path) do
       {:ok, local_path}
     else
       {:error, reason} ->
