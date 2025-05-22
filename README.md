@@ -2,15 +2,15 @@
 
 A personal study project that implements video streaming techniques similar to Netflix, built with Elixir and Phoenix LiveView.
 
-🔗 **[Live Demo - NETFLIXIR](https://netflixir.gigalixirapp.com/)**
-
-[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
-
 ### ⚠️ Important Notice
 > Due to Backblaze B2 free tier limitations, videos might be temporarily unavailable if the data transfer limit has been reached. The transfer quota is reset every 24 hours at 21:00 (Brasília Time, UTC-3).
 
 ### 🎮 Become "The only thing they fear"
 > **Did you know?** When videos are unavailable, try accessing the website through your browser - you might discover a (not very) hidden surprise! 🕹️ ✨
+
+🔗 **[Live Demo - NETFLIXIR](https://netflixir.gigalixirapp.com/)**
+
+[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
 
 ## About
 
