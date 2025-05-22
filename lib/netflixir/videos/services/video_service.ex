@@ -17,7 +17,7 @@ defmodule Netflixir.Videos.Services.VideoService do
           fn directory ->
             video_id = get_video_name(directory)
             {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
-            VideoExternal.new(video_id, created_at, playlist_path, thumbnail)
+            VideoExternal.from_storage(video_id, created_at, playlist_path, thumbnail)
           end,
           max_concurrency: 10,
           timeout: :infinity
@@ -36,7 +36,7 @@ defmodule Netflixir.Videos.Services.VideoService do
     case Storage.list_files(VideoConfig.storage_bucket(), directory) do
       {:ok, [_ | _]} ->
         {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
-        {:ok, VideoExternal.new(video_id, created_at, playlist_path, thumbnail)}
+        {:ok, VideoExternal.from_storage(video_id, created_at, playlist_path, thumbnail)}
 
       _ ->
         {:error, :not_found}

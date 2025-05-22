@@ -22,8 +22,8 @@ defmodule Netflixir.Videos.Externals.VideoExternal do
     :status
   ]
 
-  @spec new(String.t(), String.t(), String.t(), String.t()) :: t()
-  def new(video_id, created_at, playlist_path, thumbnail) do
+  @spec from_storage(String.t(), String.t(), String.t(), String.t()) :: t()
+  def from_storage(video_id, created_at, playlist_path, thumbnail) do
     %__MODULE__{
       id: video_id,
       title: format_title(video_id),
