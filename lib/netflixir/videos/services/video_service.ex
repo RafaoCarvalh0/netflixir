@@ -17,7 +17,7 @@ defmodule Netflixir.Videos.Services.VideoService do
             created_at = get_file_date(directory)
             thumbnail_url = get_thumbnail_url(video_id)
             playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
-            playlist_path = Storage.get_private_url(VideoConfig.storage_bucket(), playlist_key)
+            playlist_path = get_signed_url(playlist_key)
 
             VideoExternal.from_storage(directory, created_at, thumbnail_url, playlist_path)
           end,
@@ -39,14 +39,13 @@ defmodule Netflixir.Videos.Services.VideoService do
       {:ok, [_ | _]} ->
         created_at = get_file_date(playlist_key)
         thumbnail_url = get_thumbnail_url(video_id)
-        playlist_path = Storage.get_private_url(VideoConfig.storage_bucket(), playlist_key)
+        playlist_path = get_signed_url(playlist_key)
 
         {:ok, VideoExternal.from_storage(video_id, created_at, thumbnail_url, playlist_path)}
 
       _ ->
         {:error, :not_found}
     end
-    |> dbg()
   end
 
   defp get_file_date(storage_path) do
@@ -61,10 +60,14 @@ defmodule Netflixir.Videos.Services.VideoService do
 
     case Storage.list_files(VideoConfig.storage_bucket(), thumbnail_key) do
       {:ok, [_ | _]} ->
-        Storage.get_private_url(VideoConfig.storage_bucket(), thumbnail_key)
+        get_signed_url(thumbnail_key)
 
       _ ->
         "/images/placeholder.jpg"
     end
+  end
+
+  defp get_signed_url(key) do
+    Storage.get_private_url(VideoConfig.storage_bucket(), key)
   end
 end

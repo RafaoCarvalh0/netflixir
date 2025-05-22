@@ -9,16 +9,22 @@ const VideoPlayer = {
                 startLevel: -1, // Start with auto quality
                 capLevelToPlayerSize: true,
                 xhrSetup: (xhr, url) => {
-                    // If the URL is already presigned, use it as is
+                    // Se a URL já tem uma assinatura, usa ela como está
                     if (url.includes('?')) {
                         return;
                     }
-                    // Otherwise, try to use the base playlist URL's signature
-                    const urlObj = new URL(playlistUrl);
-                    const signature = urlObj.search;
-                    if (signature) {
-                        xhr.open('GET', `${url}${signature}`, true);
-                    }
+
+                    // Extrai o caminho base da URL do master playlist
+                    const masterUrlObj = new URL(playlistUrl);
+                    const masterBasePath = masterUrlObj.pathname.split('/').slice(0, -1).join('/');
+
+                    // Extrai o caminho relativo da URL atual
+                    const currentUrlObj = new URL(url);
+                    const relativePath = currentUrlObj.pathname.split('/').pop();
+
+                    // Constrói a URL completa com a assinatura do master playlist
+                    const fullUrl = `${masterUrlObj.origin}${masterBasePath}/${relativePath}${masterUrlObj.search}`;
+                    xhr.open('GET', fullUrl, true);
                 }
             });
 

@@ -22,6 +22,8 @@ defmodule NetflixirWeb.Endpoint do
     gzip: false,
     only: ~w(hls)
 
+  plug CORSPlug
+
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
