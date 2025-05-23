@@ -50,7 +50,8 @@ defmodule Netflixir.Storage.Local do
 
   @impl true
   def get_private_url(path) do
-    full_path = Path.join(Netflixir.Storage.storage_bucket(), path)
+    full_path =
+      Path.join(Netflixir.Storage.storage_bucket(), path)
 
     if File.exists?(full_path) do
       {:ok, path}

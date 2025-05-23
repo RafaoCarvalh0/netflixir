@@ -15,15 +15,6 @@ defmodule NetflixirWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
-  # Serve video files from local storage
-  plug Plug.Static,
-    at: "/",
-    from: :netflixir,
-    gzip: false,
-    only: ~w(assets fonts images storage favicon.ico robots.txt)
-
-  plug CORSPlug
-
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
@@ -32,7 +23,14 @@ defmodule NetflixirWeb.Endpoint do
     at: "/",
     from: :netflixir,
     gzip: false,
-    only: NetflixirWeb.static_paths()
+    only: NetflixirWeb.static_paths(),
+    headers: %{"Access-Control-Allow-Origin" => "*"},
+    content_types: %{
+      "m3u8" => "application/vnd.apple.mpegurl",
+      "ts" => "video/mp2t"
+    }
+
+  plug CORSPlug
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

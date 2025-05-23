@@ -2,36 +2,46 @@
 const VideoPlayer = {
     mounted() {
         const video = this.el;
-        const playlistUrl = video.dataset.src;
+        let playlistUrl = video.dataset.src;
 
         if (Hls.isSupported()) {
             const hls = new Hls({
                 startLevel: -1, // Start with auto quality
                 capLevelToPlayerSize: true,
                 xhrSetup: async (xhr, url) => {
-                    // Se a URL já tem uma assinatura, usa ela como está
-                    if (url.includes('?')) {
-                        return;
+                    // Se não for uma URL HTTP (arquivo local), usa um caminho absoluto
+                    if (!url.startsWith('http')) {
+                        url = `${window.location.origin}/storage/dev/${url}`;
                     }
 
-                    // Extrai o caminho relativo do arquivo no storage
-                    const masterUrlObj = new URL(playlistUrl);
-                    const basePath = masterUrlObj.pathname.split('/netflixir/')[1];
-                    const currentPath = new URL(url).pathname.split('/netflixir/')[1];
-
                     // Solicita uma URL assinada para este arquivo específico
-                    const response = await this.pushEventTo(this.el, "get_signed_url", { path: currentPath });
+                    const response = await this.pushEventTo(this.el, "get_signed_url", { path: url });
+                    if (response && response.url) {
+                        url = response.url;
+                    }
 
-                    // Usa a URL assinada retornada pelo backend
-                    xhr.open('GET', response.url, true);
+                    // Abre a requisição com a URL final
+                    xhr.open('GET', url, true);
                 }
             });
+
+            // Se não for uma URL HTTP (arquivo local), usa um caminho absoluto
+            if (!playlistUrl || !playlistUrl.startsWith('http')) {
+                const baseUrl = `${window.location.origin}/storage/dev/`;
+                playlistUrl = playlistUrl ? baseUrl + playlistUrl : null;
+            }
+
+            if (!playlistUrl) {
+                console.error('No playlist URL available!');
+                return;
+            }
 
             hls.loadSource(playlistUrl);
             hls.attachMedia(video);
 
             hls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
+                    console.error('Fatal error:', data);
                     switch (data.type) {
                         case Hls.ErrorTypes.NETWORK_ERROR:
                             console.error('Network error:', data);

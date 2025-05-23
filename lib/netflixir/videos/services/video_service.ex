@@ -82,8 +82,8 @@ defmodule Netflixir.Videos.Services.VideoService do
   end
 
   defp get_playlist_path(video_id) do
-    playlist_key = "#{processed_videos_prefix()}#{video_id}/hls/master.m3u8" |> dbg()
-    get_signed_url(playlist_key) |> dbg()
+    playlist_key = "#{processed_videos_prefix()}#{video_id}/hls/master.m3u8"
+    get_signed_url(playlist_key)
   end
 
   @spec get_thumbnail_url(String.t()) :: String.t()
