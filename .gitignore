@@ -36,24 +36,30 @@ npm-debug.log
 /assets/node_modules/
 
 # Ignore transcoded videos.
-priv/static/videos/transcoded/
+priv/static/videos/transcoded/*
 
-# Ignore segments dir.
-priv/static/videos/hls
+# Ignore segments files.
+priv/static/videos/hls/*
 
-# Ignore resolutions dir.
-priv/static/videos/resolutions
+# Ignore resolutions files.
+priv/static/videos/resolutions/*
 
-# Ignore thumbnails dir.
+# Ignore thumbnails files.
 priv/static/videos/thumbnails/
 
-# Ignore raw dir.
+# Ignore raw files.
 priv/static/videos/raw/
 
 # Ignore envrc files.
 .envrc.*
 !.envrc.custom.example
 
-# Ignore storage contents but keep the directory.
-/priv/static/storage/dev/*
+# Ignore thumbnails files.
+priv/static/storage/dev/thumbnails/*
+
+# Ignore processed videos files.
+priv/static/storage/dev/processed_videos/*
+
+# Ignore resolutions files.
+priv/static/storage/dev/resolutions/*
 

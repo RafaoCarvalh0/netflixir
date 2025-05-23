@@ -27,22 +27,40 @@ defmodule Netflixir.Storage.Local do
     full_path = Path.join(Netflixir.Storage.storage_bucket(), path)
 
     if File.exists?(full_path) do
-      entries =
-        full_path
-        |> File.ls!()
-        |> Enum.map(fn entry ->
-          entry_path = Path.join(full_path, entry)
-          relative_path = Path.join(path, entry)
-          stat = File.stat!(entry_path)
+      cond do
+        File.regular?(full_path) ->
+          stat = File.stat!(full_path)
 
-          %{
-            key: relative_path,
-            last_modified: stat.mtime,
-            size: stat.size
-          }
-        end)
+          {:ok,
+           [
+             %{
+               key: path,
+               last_modified: stat.mtime,
+               size: stat.size
+             }
+           ]}
 
-      {:ok, entries}
+        File.dir?(full_path) ->
+          entries =
+            full_path
+            |> File.ls!()
+            |> Enum.map(fn entry ->
+              entry_path = Path.join(full_path, entry)
+              relative_path = Path.join(path, entry)
+              stat = File.stat!(entry_path)
+
+              %{
+                key: relative_path,
+                last_modified: stat.mtime,
+                size: stat.size
+              }
+            end)
+
+          {:ok, entries}
+
+        true ->
+          {:error, :invalid_path}
+      end
     else
       {:error, :not_found}
     end
@@ -51,7 +69,7 @@ defmodule Netflixir.Storage.Local do
   @impl true
   def get_private_url(path) do
     full_path =
-      Path.join(Netflixir.Storage.storage_bucket(), path)
+      Path.join(Netflixir.Storage.storage_bucket(), path) |> dbg()
 
     if File.exists?(full_path) do
       {:ok, path}

@@ -50,7 +50,7 @@ defmodule Netflixir.Videos.Services.VideoService do
     {
       get_file_date(directory),
       get_playlist_path(video_id),
-      get_thumbnail_url(video_id)
+      get_thumbnail_url(video_id) |> dbg()
     }
   end
 
@@ -88,10 +88,10 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec get_thumbnail_url(String.t()) :: String.t()
   defp get_thumbnail_url(video_id) do
-    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.jpg"
+    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.webp" |> dbg()
 
-    with {:ok, [%{size: size} | _]} <- Storage.list_files(thumbnail_key),
-         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, %{size: size}) do
+    with {:ok, [%{size: size} | _]} <- Storage.list_files(thumbnail_key) |> dbg(),
+         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, %{size: size}) |> dbg() do
       url
     else
       _ -> @placeholder_image_path

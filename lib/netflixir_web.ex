@@ -19,6 +19,40 @@ defmodule NetflixirWeb do
 
   def static_paths, do: ~w(assets fonts images favicon.ico robots.txt videos storage)
 
+  @doc """
+  Handles paths for static files, converting local paths to the correct static path based on environment.
+
+  In development, converts local paths to use the static file server path.
+  In production, keeps remote URLs unchanged.
+
+  ## Examples
+
+      iex> thumbnail_path("/thumbnails/video.webp")
+      "/storage/dev/thumbnails/video.webp"
+
+      iex> thumbnail_path("https://storage.com/thumbnails/video.webp")
+      "https://storage.com/thumbnails/video.webp"
+  """
+  def thumbnail_path(path) do
+    if remote_url?(path) do
+      path
+    else
+      Path.join(static_storage_path(), String.replace_prefix(path, "/", ""))
+    end
+  end
+
+  def remote_url?(path) do
+    case URI.new(path) do
+      {:ok, %URI{scheme: scheme}} when not is_nil(scheme) -> true
+      _ -> false
+    end
+  end
+
+  defp static_storage_path do
+    storage_bucket = Application.get_env(:netflixir, :storage_bucket)
+    "/storage/#{Path.basename(storage_bucket)}"
+  end
+
   def router do
     quote do
       use Phoenix.Router, helpers: false
