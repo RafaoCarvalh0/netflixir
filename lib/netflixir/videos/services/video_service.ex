@@ -7,30 +7,34 @@ defmodule Netflixir.Videos.Services.VideoService do
   @processed_videos_prefix "processed_videos/"
   @thumbnails_prefix "thumbnails/"
 
+  defp processed_videos_prefix do
+    Application.get_env(:netflixir, :processed_videos_prefix)
+  end
+
   @spec list_available_videos() :: [VideoExternal.t()]
   def list_available_videos do
-    case Storage.list_directories(@processed_videos_prefix) do
+    case Storage.list_directories(processed_videos_prefix()) do
       {:ok, directories} ->
         directories
+        |> Enum.map(&get_video_name/1)
         |> Task.async_stream(
-          fn directory ->
-            video_id = get_video_name(directory)
-            {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
-            VideoExternal.from_storage(video_id, created_at, playlist_path, thumbnail)
+          fn video_id ->
+            get_video_info(video_id)
           end,
           max_concurrency: 10,
           timeout: :infinity
         )
         |> Enum.map(fn {:ok, video} -> video end)
+        |> Enum.reject(&is_nil/1)
 
-      {:error, _reason} ->
+      _ ->
         []
     end
   end
 
   @spec get_video_by_id(String.t()) :: {:ok, VideoExternal.t()} | {:error, :not_found}
   def get_video_by_id(video_id) do
-    directory = "#{@processed_videos_prefix}#{video_id}/"
+    directory = "#{processed_videos_prefix()}#{video_id}/"
 
     case Storage.list_files(directory) do
       {:ok, [%{key: _} | _]} ->
@@ -78,8 +82,8 @@ defmodule Netflixir.Videos.Services.VideoService do
   end
 
   defp get_playlist_path(video_id) do
-    playlist_key = "#{@processed_videos_prefix}#{video_id}/hls/master.m3u8"
-    get_signed_url(playlist_key)
+    playlist_key = "#{processed_videos_prefix()}#{video_id}/hls/master.m3u8" |> dbg()
+    get_signed_url(playlist_key) |> dbg()
   end
 
   @spec get_thumbnail_url(String.t()) :: String.t()
@@ -96,7 +100,7 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   defp generate_cached_thumbnail_url(key, file) do
     cache_hash = generate_cache_hash(file)
-    Storage.get_cached_url(key, @one_week_in_seconds, cache_hash) |> dbg()
+    Storage.get_cached_url(key, @one_week_in_seconds, cache_hash)
   end
 
   defp generate_cache_hash(file) do
@@ -106,5 +110,19 @@ defmodule Netflixir.Videos.Services.VideoService do
     :crypto.hash(:md5, "#{last_modified}#{size}")
     |> Base.encode16(case: :lower)
     |> binary_part(0, 8)
+  end
+
+  defp get_video_info(video_id) do
+    directory =
+      "#{processed_videos_prefix()}#{video_id}/"
+
+    case Storage.list_files(directory) do
+      {:ok, [%{key: _} | _]} ->
+        {created_at, playlist_path, thumbnail} = get_video_external_attrs(directory, video_id)
+        VideoExternal.from_storage(video_id, created_at, playlist_path, thumbnail)
+
+      _ ->
+        nil
+    end
   end
 end

@@ -54,3 +54,6 @@ priv/static/videos/raw/
 .envrc.*
 !.envrc.custom.example
 
+# Ignore storage contents but keep the directory.
+/priv/static/storage/dev/*
+

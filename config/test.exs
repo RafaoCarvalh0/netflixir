@@ -33,7 +33,8 @@ config :phoenix_live_view,
 # Storage configuration for tests
 config :netflixir,
   storage_bucket: "test-bucket",
-  storage_module: Netflixir.Storage.Mock
+  storage_module: Netflixir.Storage.Mock,
+  processed_videos_prefix: "test_processed_videos/"
 
 # ExAws configuration for tests
 config :ex_aws,

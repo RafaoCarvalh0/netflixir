@@ -15,12 +15,12 @@ defmodule NetflixirWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
-  # Serve video files from storage
+  # Serve video files from local storage
   plug Plug.Static,
-    at: "/videos",
+    at: "/",
     from: :netflixir,
     gzip: false,
-    only: ~w(hls)
+    only: ~w(assets fonts images storage favicon.ico robots.txt)
 
   plug CORSPlug
 

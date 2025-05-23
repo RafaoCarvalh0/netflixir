@@ -80,3 +80,9 @@ config :phoenix_live_view,
   debug_heex_annotations: true,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+# Configure storage module for local development
+config :netflixir,
+  storage_module: Netflixir.Storage.Local,
+  storage_bucket: Path.expand("priv/static/storage/dev"),
+  processed_videos_prefix: "processed_videos/"

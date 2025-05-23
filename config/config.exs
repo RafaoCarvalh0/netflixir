@@ -55,7 +55,8 @@ config :phoenix, :json_library, Jason
 
 # Storage configuration
 config :netflixir,
-  storage_bucket: System.get_env("STORAGE_BUCKET")
+  storage_bucket: System.get_env("STORAGE_BUCKET"),
+  processed_videos_prefix: "processed_videos/"
 
 # ExAws configuration
 config :ex_aws,

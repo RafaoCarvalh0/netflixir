@@ -10,6 +10,10 @@ defmodule Netflixir.Storage do
           size: non_neg_integer()
         }
 
+  def storage_bucket do
+    Application.get_env(:netflixir, :storage_bucket)
+  end
+
   @callback list_directories(prefix :: path()) ::
               {:ok, [path()]} | {:error, :not_found | term()}
 

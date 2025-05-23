@@ -4,13 +4,9 @@ defmodule Netflixir.Storage.ExAws do
   """
   @behaviour Netflixir.Storage
 
-  defp bucket_name do
-    Application.get_env(:netflixir, :storage_bucket)
-  end
-
   @impl true
   def list_directories(prefix) do
-    ExAws.S3.list_objects(bucket_name(),
+    ExAws.S3.list_objects(Netflixir.Storage.storage_bucket(),
       prefix: prefix,
       delimiter: "/"
     )
@@ -29,7 +25,7 @@ defmodule Netflixir.Storage.ExAws do
 
   @impl true
   def list_files(path) do
-    ExAws.S3.list_objects(bucket_name(), prefix: path)
+    ExAws.S3.list_objects(Netflixir.Storage.storage_bucket(), prefix: path)
     |> ExAws.request()
     |> case do
       {:ok, %{body: %{contents: contents}}} ->
@@ -51,7 +47,7 @@ defmodule Netflixir.Storage.ExAws do
 
   @impl true
   def get_private_url(path) do
-    ExAws.S3.presigned_url(ExAws.Config.new(:s3), :get, bucket_name(), path)
+    ExAws.S3.presigned_url(ExAws.Config.new(:s3), :get, Netflixir.Storage.storage_bucket(), path)
   end
 
   @impl true
@@ -61,7 +57,7 @@ defmodule Netflixir.Storage.ExAws do
     ExAws.S3.presigned_url(
       config,
       :get,
-      bucket_name(),
+      Netflixir.Storage.storage_bucket(),
       path,
       expires_in: expires_in,
       query_params: [{"hash", cache_hash}]
@@ -70,7 +66,7 @@ defmodule Netflixir.Storage.ExAws do
 
   @impl true
   def download(path, local_path) do
-    ExAws.S3.download_file(bucket_name(), path, local_path)
+    ExAws.S3.download_file(Netflixir.Storage.storage_bucket(), path, local_path)
     |> ExAws.request()
     |> case do
       {:ok, :done} -> {:ok, local_path}
@@ -82,7 +78,7 @@ defmodule Netflixir.Storage.ExAws do
   def upload(local_path, path) do
     local_path
     |> ExAws.S3.Upload.stream_file()
-    |> ExAws.S3.upload(bucket_name(), path)
+    |> ExAws.S3.upload(Netflixir.Storage.storage_bucket(), path)
     |> ExAws.request()
     |> case do
       {:ok, _} -> {:ok, "#{bucket_url()}/#{path}"}
