@@ -53,6 +53,21 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Storage configuration
+config :netflixir,
+  storage_bucket: System.get_env("STORAGE_BUCKET")
+
+# ExAws configuration
+config :ex_aws,
+  access_key_id: System.get_env("B2_KEY_ID"),
+  secret_access_key: System.get_env("B2_APP_KEY"),
+  region: System.get_env("B2_REGION")
+
+config :ex_aws, :s3,
+  scheme: "https://",
+  host: System.get_env("B2_HOST"),
+  port: System.get_env("B2_PORT")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

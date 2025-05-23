@@ -65,45 +65,6 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # Storage configuration
-  config :netflixir,
-    storage_bucket:
-      System.get_env("STORAGE_BUCKET") ||
-        raise("""
-        environment variable STORAGE_BUCKET is missing.
-        """)
-
-  # ExAws configuration
-  config :ex_aws,
-    access_key_id:
-      System.get_env("B2_KEY_ID") ||
-        raise("""
-        environment variable B2_KEY_ID is missing.
-        """),
-    secret_access_key:
-      System.get_env("B2_APP_KEY") ||
-        raise("""
-        environment variable B2_APP_KEY is missing.
-        """),
-    region:
-      System.get_env("B2_REGION") ||
-        raise("""
-        environment variable B2_REGION is missing.
-        """)
-
-  config :ex_aws, :s3,
-    scheme: "https://",
-    host:
-      System.get_env("B2_HOST") ||
-        raise("""
-        environment variable B2_HOST is missing.
-        """),
-    port:
-      System.get_env("B2_PORT") ||
-        raise("""
-        environment variable B2_PORT is missing.
-        """)
-
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
   # want to use a different value for prod and you most likely don't want

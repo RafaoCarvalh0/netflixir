@@ -58,17 +58,14 @@ defmodule Netflixir.Storage.ExAws do
   def get_cached_url(path, expires_in, cache_hash) do
     config = ExAws.Config.new(:s3)
 
-    url =
-      ExAws.S3.presigned_url(
-        config,
-        :get,
-        bucket_name(),
-        path,
-        expires_in: expires_in,
-        query_params: [{"hash", cache_hash}]
-      )
-
-    {:ok, url}
+    ExAws.S3.presigned_url(
+      config,
+      :get,
+      bucket_name(),
+      path,
+      expires_in: expires_in,
+      query_params: [{"hash", cache_hash}]
+    )
   end
 
   @impl true

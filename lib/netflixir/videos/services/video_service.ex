@@ -96,7 +96,7 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   defp generate_cached_thumbnail_url(key, file) do
     cache_hash = generate_cache_hash(file)
-    Storage.get_cached_url(key, @one_week_in_seconds, cache_hash)
+    Storage.get_cached_url(key, @one_week_in_seconds, cache_hash) |> dbg()
   end
 
   defp generate_cache_hash(file) do
