@@ -9,9 +9,9 @@ defmodule Netflixir.Storage.DefaultMock do
   def list_directories(_prefix) do
     {:ok,
      [
-       "processed_videos/test-video-1/",
-       "processed_videos/awesome-movie/",
-       "processed_videos/documentary/"
+       "test_processed_videos/test-video-1/",
+       "test_processed_videos/awesome-movie/",
+       "test_processed_videos/documentary/"
      ]}
   end
 

@@ -4,7 +4,6 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @one_week_in_seconds 604_800
   @placeholder_image_path "/images/placeholder.jpg"
-  @processed_videos_prefix "processed_videos/"
   @thumbnails_prefix "thumbnails/"
 
   defp processed_videos_prefix do
@@ -50,14 +49,16 @@ defmodule Netflixir.Videos.Services.VideoService do
     {
       get_file_date(directory),
       get_playlist_path(video_id),
-      get_thumbnail_url(video_id) |> dbg()
+      get_thumbnail_url(video_id)
     }
   end
 
   defp get_video_name(storage_path) do
-    if String.contains?(storage_path, @processed_videos_prefix) do
+    prefix = processed_videos_prefix()
+
+    if String.contains?(storage_path, prefix) do
       storage_path
-      |> String.replace(@processed_videos_prefix, "")
+      |> String.replace(prefix, "")
       |> String.split("/")
       |> List.first()
     else
@@ -88,10 +89,10 @@ defmodule Netflixir.Videos.Services.VideoService do
 
   @spec get_thumbnail_url(String.t()) :: String.t()
   defp get_thumbnail_url(video_id) do
-    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.webp" |> dbg()
+    thumbnail_key = "#{@thumbnails_prefix}#{video_id}.webp"
 
-    with {:ok, [%{size: size} | _]} <- Storage.list_files(thumbnail_key) |> dbg(),
-         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, %{size: size}) |> dbg() do
+    with {:ok, [%{size: size} | _]} <- Storage.list_files(thumbnail_key),
+         {:ok, url} <- generate_cached_thumbnail_url(thumbnail_key, %{size: size}) do
       url
     else
       _ -> @placeholder_image_path

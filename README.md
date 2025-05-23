@@ -72,9 +72,19 @@ The frontend implementation was largely assisted by AI, with code design decisio
 ```bash
 mix setup
 ```
-3. Configure environment variables:
+
+The project is configured to work differently in each environment:
+
+#### Development
+In development mode, the project uses local storage for videos and thumbnails. No additional configuration is needed - files will be stored in the project's storage directory.
+
+#### Testing
+The testing environment uses mocks for storage operations, making it easy to test without external dependencies.
+
+#### Production
+For production deployment, you'll need to configure the following environment variables for Backblaze B2 storage:
+
 ```bash
-# Required for Backblaze B2 storage
 export STORAGE_BUCKET="your-backblaze-bucket"
 export B2_KEY_ID="your-backblaze-key-id"
 export B2_APP_KEY="your-backblaze-application-key"
@@ -82,7 +92,8 @@ export B2_REGION="your-backblaze-region"
 export B2_HOST="your-backblaze-host"
 export B2_PORT="your-backblaze-port"
 ```
-4. Start the server:
+
+3. Start the server:
 ```bash
 mix phx.server
 ```

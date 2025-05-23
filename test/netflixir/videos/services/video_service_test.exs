@@ -20,9 +20,9 @@ defmodule Netflixir.Videos.Services.VideoServiceTest do
                  created_at: ~U[2024-03-10 15:30:00Z],
                  status: "Ready",
                  playlist_path:
-                   "https://test.storage.com/test-bucket/processed_videos/test-video-1/hls/master.m3u8?signed=true",
+                   "https://test.storage.com/test-bucket/test_processed_videos/test-video-1/hls/master.m3u8?signed=true",
                  thumbnail:
-                   "https://test.storage.com/test-bucket/thumbnails/test-video-1.jpg?expires=604800&hash=test123"
+                   "https://test.storage.com/test-bucket/thumbnails/test-video-1.webp?expires=604800&hash=test123"
                },
                %VideoExternal{
                  id: "awesome-movie",
@@ -30,9 +30,9 @@ defmodule Netflixir.Videos.Services.VideoServiceTest do
                  created_at: ~U[2024-03-10 15:30:00Z],
                  status: "Ready",
                  playlist_path:
-                   "https://test.storage.com/test-bucket/processed_videos/awesome-movie/hls/master.m3u8?signed=true",
+                   "https://test.storage.com/test-bucket/test_processed_videos/awesome-movie/hls/master.m3u8?signed=true",
                  thumbnail:
-                   "https://test.storage.com/test-bucket/thumbnails/awesome-movie.jpg?expires=604800&hash=test123"
+                   "https://test.storage.com/test-bucket/thumbnails/awesome-movie.webp?expires=604800&hash=test123"
                },
                %VideoExternal{
                  id: "documentary",
@@ -40,9 +40,9 @@ defmodule Netflixir.Videos.Services.VideoServiceTest do
                  created_at: ~U[2024-03-10 15:30:00Z],
                  status: "Ready",
                  playlist_path:
-                   "https://test.storage.com/test-bucket/processed_videos/documentary/hls/master.m3u8?signed=true",
+                   "https://test.storage.com/test-bucket/test_processed_videos/documentary/hls/master.m3u8?signed=true",
                  thumbnail:
-                   "https://test.storage.com/test-bucket/thumbnails/documentary.jpg?expires=604800&hash=test123"
+                   "https://test.storage.com/test-bucket/thumbnails/documentary.webp?expires=604800&hash=test123"
                }
              ]
     end
@@ -68,9 +68,9 @@ defmodule Netflixir.Videos.Services.VideoServiceTest do
                   created_at: ~U[2024-03-10 15:30:00Z],
                   status: "Ready",
                   playlist_path:
-                    "https://test.storage.com/test-bucket/processed_videos/test-video-1/hls/master.m3u8?signed=true",
+                    "https://test.storage.com/test-bucket/test_processed_videos/test-video-1/hls/master.m3u8?signed=true",
                   thumbnail:
-                    "https://test.storage.com/test-bucket/thumbnails/test-video-1.jpg?expires=604800&hash=test123"
+                    "https://test.storage.com/test-bucket/thumbnails/test-video-1.webp?expires=604800&hash=test123"
                 }}
     end
 
