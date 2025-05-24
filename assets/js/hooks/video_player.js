@@ -3,30 +3,42 @@ const VideoPlayer = {
     mounted() {
         const video = this.el;
         let playlistUrl = video.dataset.src;
+        const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
         if (Hls.isSupported()) {
             const hls = new Hls({
                 startLevel: -1, // Start with auto quality
                 capLevelToPlayerSize: true,
                 xhrSetup: async (xhr, url) => {
-                    // Se não for uma URL HTTP (arquivo local), usa um caminho absoluto
-                    if (!url.startsWith('http')) {
+                    // Em dev, monta a URL local se não for http
+                    if (isDev && !url.startsWith('http')) {
                         url = `${window.location.origin}/storage/dev/${url}`;
+                        xhr.open('GET', url, true);
+                        return;
                     }
 
-                    // Solicita uma URL assinada para este arquivo específico
-                    const response = await this.pushEventTo(this.el, "get_signed_url", { path: url });
-                    if (response && response.url) {
-                        url = response.url;
+                    // Em prod, sempre pede assinatura se não tiver query
+                    if (!url.includes('?')) {
+                        // Extrai só o caminho relativo (key) do arquivo no bucket
+                        let key = url;
+                        if (url.startsWith('http')) {
+                            const match = url.match(/\/netflixir\/(.+)$/);
+                            if (match) {
+                                key = match[1];
+                            }
+                        }
+                        const response = await this.pushEventTo(this.el, "get_signed_url", { path: key });
+                        if (response && response.url) {
+                            url = response.url;
+                        }
                     }
 
-                    // Abre a requisição com a URL final
                     xhr.open('GET', url, true);
                 }
             });
 
-            // Se não for uma URL HTTP (arquivo local), usa um caminho absoluto
-            if (!playlistUrl || !playlistUrl.startsWith('http')) {
+            // Em dev, monta a URL local se não for http
+            if (isDev && (!playlistUrl || !playlistUrl.startsWith('http'))) {
                 const baseUrl = `${window.location.origin}/storage/dev/`;
                 playlistUrl = playlistUrl ? baseUrl + playlistUrl : null;
             }
