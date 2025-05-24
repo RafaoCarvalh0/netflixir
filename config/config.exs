@@ -127,3 +127,6 @@ config :netflixir, :videos,
       bandwidth: "200000"
     }
   }
+
+config :netflixir, Netflixir.Repo,
+  migration_timestamps: [inserted_at: :created_at, updated_at: :updated_at]
