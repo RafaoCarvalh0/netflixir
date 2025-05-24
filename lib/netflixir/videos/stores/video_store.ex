@@ -64,18 +64,12 @@ defmodule Netflixir.Videos.Stores.VideoStore do
             @placeholder_image_path
         end
 
-      playlist_url =
-        case Storage.get_private_url(playlist_key) do
-          {:ok, url} -> url
-          {:error, _} -> nil
-        end
-
       %{
         id: video_id,
         created_at: last_modified,
         updated_at: last_modified,
         thumbnail_url: thumbnail_url,
-        playlist_url: playlist_url
+        playlist_url: playlist_key
       }
     else
       _ -> nil
