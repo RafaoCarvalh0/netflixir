@@ -95,12 +95,21 @@ To improve performance and user experience, a Service Worker is used to cache im
 - **Video Processing**: FFmpeg
 - **Storage**: Backblaze B2 (Free Tier)
 - **Deployment**: Gigalixir
-- **Database**: PostgreSQL (configured but not currently in use)
+- **Database**: PostgreSQL
 
 ### Infrastructure
 - **Storage**: Using Backblaze B2's free tier (10GB) for video storage
 - **Hosting**: Deployed on Gigalixir's free tier
-- **Database**: PostgreSQL is configured for future features but not currently utilized
+- **Database**: PostgreSQL
+
+## Prerequisites
+
+Before you start, make sure you have the following installed on your machine:
+
+- **Elixir** and **Erlang** (recommended via [asdf](https://asdf-vm.com/) install)
+- **Docker** (for running the PostgreSQL database easily)
+- **FFmpeg** (required for video processing)
+- **PostgreSQL client** (optional, for direct database access)
 
 ## Development Setup
 
@@ -111,10 +120,9 @@ To improve performance and user experience, a Service Worker is used to cache im
 
 ### Local Setup
 1. Clone the repository
-2. Install dependencies:
-```bash
-mix setup
-```
+2. Start the server with `mix phx.server`
+
+The server will be available at [`localhost:4000`](http://localhost:4000)
 
 The project is configured to work differently in each environment:
 
@@ -135,13 +143,6 @@ export B2_REGION="your-backblaze-region"
 export B2_HOST="your-backblaze-host"
 export B2_PORT="your-backblaze-port"
 ```
-
-3. Start the server:
-```bash
-mix phx.server
-```
-
-The server will be available at [`localhost:4000`](http://localhost:4000)
 
 ## Video Processing Pipeline
 
@@ -167,4 +168,31 @@ This project also leveraged AI technologies extensively during development, whic
 ## Contributing
 
 This is a personal study project, but suggestions and contributions are welcome! Feel free to open issues or submit pull requests.
+
+## Database Setup with Docker
+
+To quickly set up the PostgreSQL database for local development, you can use Docker with the provided `docker-compose.yml` file.
+
+### Steps:
+
+1. **Start the database with Docker Compose:**
+   ```bash
+   docker-compose up -d
+   ```
+   This will start a PostgreSQL container with the following credentials (as defined in `docker-compose.yml`):
+   - User: `postgres`
+   - Password: `postgres`
+   - Database: `netflixir_dev`
+   - Port: `5432`
+
+2. **Run database migrations:**
+   ```bash
+   mix ecto.setup
+   ```
+   This will create the database, run all migrations, and seed initial data if you have a `priv/repo/seeds.exs` file.
+
+3. **(Optional) Stop the database:**
+   ```bash
+   docker-compose down
+   ```
 
