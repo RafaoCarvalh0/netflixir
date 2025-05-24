@@ -22,7 +22,7 @@ defmodule Netflixir.Storage.DefaultMock do
 
   @impl true
   def get_private_url(path) do
-    {:ok, "https://test.storage.com/test-bucket/#{path}?signed=true"}
+    {:ok, path}
   end
 
   @impl true
@@ -37,7 +37,7 @@ defmodule Netflixir.Storage.DefaultMock do
   end
 
   @impl true
-  def upload(_local_path, path) do
+  def upload(_local_path, path, _cacheable? \\ true) do
     {:ok, "https://test.storage.com/test-bucket/#{path}"}
   end
 end

@@ -97,7 +97,7 @@ defmodule Netflixir.Storage.Local do
   end
 
   @impl true
-  def upload(local_path, path) do
+  def upload(local_path, path, _cacheable? \\ true) do
     if File.exists?(local_path) do
       destination = Path.join(Netflixir.Storage.storage_bucket(), path)
       File.mkdir_p!(Path.dirname(destination))

@@ -29,7 +29,7 @@ defmodule Netflixir.Storage do
   @callback download(path(), local_path :: path()) ::
               {:ok, path()} | {:error, term()}
 
-  @callback upload(local_path :: path(), path()) ::
+  @callback upload(local_path :: path(), path(), cacheable? :: boolean()) ::
               {:ok, String.t()} | {:error, term()}
 
   def list_directories(prefix), do: module().list_directories(prefix)
@@ -43,7 +43,8 @@ defmodule Netflixir.Storage do
 
   def download(path, local_path), do: module().download(path, local_path)
 
-  def upload(local_path, path), do: module().upload(local_path, path)
+  def upload(local_path, path, cacheable? \\ true),
+    do: module().upload(local_path, path, cacheable?)
 
   defp module do
     Application.get_env(:netflixir, :storage_module)

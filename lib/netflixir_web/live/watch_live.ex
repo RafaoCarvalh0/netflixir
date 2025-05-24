@@ -5,18 +5,23 @@ defmodule NetflixirWeb.WatchLive do
 
   @impl true
   def mount(%{"id" => video_id}, _session, socket) do
-    case VideoService.get_video_by_id(video_id) do
-      {:ok, video} ->
-        {:ok,
-         socket
-         |> assign(:video, video)
-         |> assign(:current_quality, "auto")}
+    socket =
+      socket
+      |> assign_new(:video, fn ->
+        case VideoService.get_video_by_id(video_id) do
+          {:ok, video} -> video
+          {:error, _} -> nil
+        end
+      end)
+      |> assign_new(:current_quality, fn -> "auto" end)
 
-      {:error, :not_found} ->
-        {:ok,
-         socket
-         |> put_flash(:error, "Video not found")
-         |> redirect(to: ~p"/")}
+    if socket.assigns.video do
+      {:ok, socket}
+    else
+      {:ok,
+       socket
+       |> put_flash(:error, "Video not found")
+       |> redirect(to: ~p"/")}
     end
   end
 

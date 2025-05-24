@@ -1,4 +1,3 @@
-# lib/netflixir_web/live/home_live.ex
 defmodule NetflixirWeb.HomeLive do
   use NetflixirWeb, :live_view
 
@@ -6,6 +5,6 @@ defmodule NetflixirWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, videos: VideoService.list_available_videos())}
+    {:ok, assign_new(socket, :videos, fn -> VideoService.list_available_videos() end)}
   end
 end

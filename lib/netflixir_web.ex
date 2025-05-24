@@ -17,7 +17,8 @@ defmodule NetflixirWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt videos storage)
+  def static_paths,
+    do: ~w(assets fonts images favicon.ico robots.txt videos storage service-worker.js)
 
   @doc """
   Handles paths for static files, converting local paths to the correct static path based on environment.
