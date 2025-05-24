@@ -2,6 +2,12 @@
 
 A personal study project that implements video streaming techniques similar to Netflix, built with Elixir and Phoenix LiveView.
 
+[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
+
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+
 ### ⚠️ Important Notice
 > Due to Backblaze B2 free tier limitations, videos might be temporarily unavailable if the data transfer limit has been reached. The transfer quota is reset every 24 hours at 21:00 (Brasília Time, UTC-3).
 
@@ -9,8 +15,6 @@ A personal study project that implements video streaming techniques similar to N
 > **Did you know?** When videos are unavailable, try accessing the website through your browser - you might discover a (not very) hidden surprise! 🕹️ ✨
 
 🔗 **[Live Demo - NETFLIXIR](https://netflixir.gigalixirapp.com/)**
-
-[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
 
 ## About
 
@@ -38,6 +42,45 @@ The project follows several software development principles and patterns to ensu
   - Modular and extensible design
 
 The frontend implementation was largely assisted by AI, with code design decisions being made by the developer. JavaScript and HTML templates were mostly implemented by AI with minimal intervention, as the focus was on backend functionality. It currently focuses on serving a single video with multiple quality options, allowing users to experience how adaptive streaming works.
+
+### Backend Architecture (Text Diagram)
+
+```
+[LiveView/Controller]
+      |
+      v
+[Service Layer] <-> [Store Layer] <-> [Storage Behaviour]
+      |                                 |         |
+      |                                 |         +-- [ExAws (S3/B2)]
+      |                                 |         +-- [Local Storage]
+      |                                 |         +-- [Mock (Test)]
+      v
+[Video Processing Pipeline (FFmpeg, HLS)]
+```
+- **LiveView/Controller**: Handles user interaction and events.
+- **Service Layer**: Business logic, orchestration, and coordination.
+- **Store Layer**: Data access, mapping, and transformation.
+- **Storage Behaviour**: Abstracts storage, allowing easy swap between local, remote, or mock.
+- **Video Processing Pipeline**: Handles transcoding, segmentation, and upload.
+
+### Example Request Flow
+
+1. User requests a video page via LiveView.
+2. LiveView calls the Service Layer to fetch video metadata.
+3. Service Layer uses Store Layer to get video info and paths.
+4. Store Layer interacts with Storage Behaviour to list files or get signed URLs.
+5. LiveView renders the page with video info and signed URLs for streaming.
+6. The frontend player requests HLS playlists and segments, which are served from storage (and may be cached by Service Worker).
+
+### Service Worker & Manual Media Cache
+
+To improve performance and user experience, a Service Worker is used to cache images and HLS media files (`.m3u8`, `.ts`) in the browser. This allows for:
+- Faster video startup and seeking for already-viewed segments
+- Offline playback of cached segments
+- Reduced bandwidth usage for repeat views
+
+**Note:** The Service Worker only intercepts requests for static media files and does not interfere with LiveView, WebSocket, or API requests.
+
 
 ### Current MVP Features
 - Video streaming with multiple quality options
