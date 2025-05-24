@@ -60,7 +60,9 @@ defmodule Netflixir.MixProject do
       {:sweet_xml, "~> 0.7"},
       {:hackney, "~> 1.18"},
       {:cors_plug, "~> 3.0"},
-      {:mox, "~> 1.1", only: :test}
+      {:mox, "~> 1.1", only: :test},
+      {:bcrypt_elixir, "~> 3.0"},
+      {:ex_machina, "~> 2.7", only: :test}
     ]
   end
 
