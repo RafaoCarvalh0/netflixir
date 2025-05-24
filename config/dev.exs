@@ -2,13 +2,13 @@ import Config
 
 # Configure your database
 config :netflixir, Netflixir.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "netflixir_dev",
+  username: System.get_env("POSTGRES_USER", "postgres"),
+  password: System.get_env("POSTGRES_PASSWORD", "postgres"),
+  hostname: System.get_env("POSTGRES_HOST", "localhost"),
+  database: System.get_env("POSTGRES_DB", "netflixir_dev"),
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: String.to_integer(System.get_env("POOL_SIZE", "10"))
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -16,6 +16,12 @@ config :netflixir, Netflixir.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
+secret_key_base =
+  System.get_env(
+    "SECRET_KEY_BASE",
+    "EC6vfN7FcAIHGU3G2DBIR17186UdJyfFwEnpsY3WRdF8fyR+NhT2zrOgiu8GeN/b"
+  )
+
 config :netflixir, NetflixirWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
@@ -23,7 +29,7 @@ config :netflixir, NetflixirWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "EC6vfN7FcAIHGU3G2DBIR17186UdJyfFwEnpsY3WRdF8fyR+NhT2zrOgiu8GeN/b",
+  secret_key_base: secret_key_base,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:netflixir, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:netflixir, ~w(--watch)]}
