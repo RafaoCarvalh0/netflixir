@@ -47,8 +47,7 @@ The frontend implementation was largely assisted by AI, with code design decisio
 
 ```mermaid
 flowchart TD
-    A[LiveView/Controller]
-    A --> B[Service Layer]
+    A[LiveView/Controller] --> B[Service Layer]
     B <--> C[Store Layer]
     C <--> D[Database (PostgreSQL)]
     C --> E[User Store: users, auth, etc.]
