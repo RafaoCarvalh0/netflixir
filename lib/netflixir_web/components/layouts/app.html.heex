@@ -1,11 +1,17 @@
 <header class="bg-black mb-8">
   <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Top">
-    <div class="flex w-full items-center justify-center py-6">
+    <div class="flex w-full items-center justify-between py-6">
       <a href="/" class="text-2xl font-bold flex items-center">
         <span class="text-red-600">Netfl</span>
         <span class="text-[#4e2a8e]">ixir</span>
         <img src={~p"/images/elixir-logo.png"} alt="Elixir Logo" class="h-6 ml-1" />
       </a>
+      <.link
+        navigate={~p"/login"}
+        class="bg-[#e50914] hover:bg-[#b0060f] text-white font-bold py-2 px-4 rounded transition"
+      >
+        Sign In
+      </.link>
     </div>
   </nav>
 </header>
