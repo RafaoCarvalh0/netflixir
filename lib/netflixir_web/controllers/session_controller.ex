@@ -5,7 +5,7 @@ defmodule NetflixirWeb.SessionController do
     conn
     |> put_resp_cookie("user_token", token,
       http_only: true,
-      secure: false,
+      secure: true,
       max_age: 60 * 60 * 24 * 7
     )
     |> redirect(to: "/")
