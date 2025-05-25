@@ -45,18 +45,21 @@ The frontend implementation was largely assisted by AI, with code design decisio
 
 ### Backend Architecture (Text Diagram)
 
+```mermaid
+flowchart TD
+    A[LiveView/Controller]
+    A --> B[Service Layer]
+    B <--> C[Store Layer]
+    C <--> D[Database (PostgreSQL)]
+    C --> E[User Store: users, auth, etc.]
+    C --> F[Video Store: video metadata, etc.]
+    B --> G[Storage Behaviour]
+    G --> H[ExAws (S3/B2)]
+    G --> I[Local Storage]
+    G --> J[Mock (Test)]
+    B --> K[Video Processing Pipeline (FFmpeg, HLS)]
 ```
-[LiveView/Controller]
-      |
-      v
-[Service Layer] <-> [Store Layer] <-> [Storage Behaviour]
-      |                                 |         |
-      |                                 |         +-- [ExAws (S3/B2)]
-      |                                 |         +-- [Local Storage]
-      |                                 |         +-- [Mock (Test)]
-      v
-[Video Processing Pipeline (FFmpeg, HLS)]
-```
+
 - **LiveView/Controller**: Handles user interaction and events.
 - **Service Layer**: Business logic, orchestration, and coordination.
 - **Store Layer**: Data access, mapping, and transformation.
