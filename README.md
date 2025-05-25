@@ -2,19 +2,21 @@
 
 A personal study project that implements video streaming techniques similar to Netflix, built with Elixir and Phoenix LiveView.
 
-[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
+[![Build](https://img.shields.io/badge/build-passing-darkgreen)](https://github.com/rafa1/netflixir) [![Tests](https://img.shields.io/badge/tests-passing-darkgreen)](https://github.com/rafa1/netflixir)
 
-![Build](https://img.shields.io/badge/build-passing-brightgreen)
+---
 
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
-
-### ⚠️ Important Notice
+## ⚠️ Important Notice
 > Due to Backblaze B2 free tier limitations, videos might be temporarily unavailable if the data transfer limit has been reached. The transfer quota is reset every 24 hours at 21:00 (Brasília Time, UTC-3).
 
-### 🎮 Become "The only thing they fear"
+## 🎮 Become "The only thing they fear"
 > **Did you know?** When videos are unavailable, try accessing the website through your browser - you might discover a (not very) hidden surprise! 🕹️ ✨
 
 🔗 **[Live Demo - NETFLIXIR](https://netflixir.gigalixirapp.com/)**
+
+[![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fnetflixir.gigalixirapp.com)](https://netflixir.gigalixirapp.com/)
+
+---
 
 ## About
 
@@ -43,23 +45,7 @@ The project follows several software development principles and patterns to ensu
 
 The frontend implementation was largely assisted by AI, with code design decisions being made by the developer. JavaScript and HTML templates were mostly implemented by AI with minimal intervention, as the focus was on backend functionality. It currently focuses on serving a single video with multiple quality options, allowing users to experience how adaptive streaming works.
 
-### Backend Architecture (Text Diagram)
-
-```mermaid
-flowchart LR
-    A[LiveView/Controller] --> B[Service Layer]
-    B --> C[Store Layer]
-    C --> B
-    C --> D[Database: PostgreSQL]
-    D --> C
-    C --> E[User Store: users, auth, etc.]
-    C --> F[Video Store: video metadata, etc.]
-    B --> G[Storage Behaviour]
-    G --> H[ExAws S3/B2]
-    G --> I[Local Storage]
-    G --> J[Mock Test]
-    B --> K[Video Processing Pipeline - FFmpeg, HLS]
-```
+### Backend Architecture
 
 - **LiveView/Controller**: Handles user interaction and events.
 - **Service Layer**: Business logic, orchestration, and coordination.
@@ -148,55 +134,4 @@ export B2_HOST="your-backblaze-host"
 export B2_PORT="your-backblaze-port"
 ```
 
-## Video Processing Pipeline
-
-The project implements a complete video processing pipeline that:
-1. Transcodes the input video to an optimized format
-2. Creates multiple resolution variants (1080p, 720p, 480p, 360p, 240p, 144p)
-3. Generates HLS segments and playlists
-4. Organizes files in the correct structure for streaming
-5. Uploads processed content to Backblaze B2
-
-## Learning Resources
-
-To learn more about the technologies used:
-* [Phoenix Framework](https://www.phoenixframework.org/)
-* [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html)
-* [FFmpeg](https://ffmpeg.org/documentation.html)
-* [HLS Streaming](https://developer.apple.com/streaming/)
-* [Backblaze B2](https://www.backblaze.com/b2/docs/)
-* [Gigalixir](https://gigalixir.com/docs)
-
-This project also leveraged AI technologies extensively during development, which proved invaluable for learning, problem-solving, and understanding complex streaming concepts. AI assistance helped in making architectural decisions, debugging issues, and implementing best practices.
-
-## Contributing
-
-This is a personal study project, but suggestions and contributions are welcome! Feel free to open issues or submit pull requests.
-
-## Database Setup with Docker
-
-To quickly set up the PostgreSQL database for local development, you can use Docker with the provided `docker-compose.yml` file.
-
-### Steps:
-
-1. **Start the database with Docker Compose:**
-   ```bash
-   docker-compose up -d
-   ```
-   This will start a PostgreSQL container with the following credentials (as defined in `docker-compose.yml`):
-   - User: `postgres`
-   - Password: `postgres`
-   - Database: `netflixir_dev`
-   - Port: `5432`
-
-2. **Run database migrations:**
-   ```bash
-   mix ecto.setup
-   ```
-   This will create the database, run all migrations, and seed initial data if you have a `priv/repo/seeds.exs` file.
-
-3. **(Optional) Stop the database:**
-   ```bash
-   docker-compose down
-   ```
 
