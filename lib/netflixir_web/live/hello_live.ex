@@ -1,8 +1,12 @@
 defmodule NetflixirWeb.HelloLive do
   use NetflixirWeb, :live_view
 
-  def mount(_params, _session, socket) do
-    dbg(socket)
-    {:ok, assign(socket, :message, "Hello World!")}
+  def mount(_params, session, socket) do
+    current_user = Map.get(session, "current_user")
+
+    {:ok,
+     socket
+     |> assign(:message, "Hello World!")
+     |> assign(:current_user, current_user)}
   end
 end
