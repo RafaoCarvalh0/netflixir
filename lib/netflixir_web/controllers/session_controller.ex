@@ -4,7 +4,7 @@ defmodule NetflixirWeb.SessionController do
   def set_jwt(conn, %{"token" => token}) do
     conn
     |> put_resp_cookie("user_token", token,
-      http_only: true,
+      http_only: false,
       secure: true,
       max_age: 60 * 60 * 24 * 7
     )
