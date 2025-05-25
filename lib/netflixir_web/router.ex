@@ -26,6 +26,8 @@ defmodule NetflixirWeb.Router do
     live "/register", AuthLive.RegisterLive
     live "/login", AuthLive.LoginLive
 
+    live "/hello", HelloLive
+
     post "/set_jwt", SessionController, :set_jwt
     get "/logout", SessionController, :logout
   end
