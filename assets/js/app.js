@@ -26,7 +26,14 @@ import VideoPlayer from "./hooks/video_player"
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
 let Hooks = {
-  VideoPlayer: VideoPlayer
+  VideoPlayer: VideoPlayer,
+  AutoHideFlash: {
+    mounted() {
+      setTimeout(() => {
+        this.el.style.display = "none";
+      }, 2000);
+    }
+  }
 }
 
 let liveSocket = new LiveSocket("/live", Socket, {
