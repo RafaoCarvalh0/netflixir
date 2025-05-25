@@ -80,3 +80,9 @@ window.addEventListener("phx:set-jwt-cookie", (e) => {
   form.submit();
 });
 
+// Handle logout
+window.addEventListener("phx:logout", () => {
+  document.cookie = "user_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  window.location.href = "/";
+});
+

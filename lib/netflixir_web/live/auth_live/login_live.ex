@@ -8,8 +8,11 @@ defmodule NetflixirWeb.AuthLive.LoginLive do
 
   def handle_event("save", %{"user" => user_params}, socket) do
     case AuthService.authenticate_user(user_params) do
-      {:ok, %{user: _user, token: token}} ->
-        {:noreply, push_event(socket, "set-jwt-cookie", %{token: token})}
+      {:ok, %{user: user, token: token}} ->
+        {:noreply,
+         socket
+         |> assign_new(:current_user, fn -> user end)
+         |> push_event("set-jwt-cookie", %{token: token})}
 
       {:error, error} when error in [:not_found, :invalid_password] ->
         {:noreply,
