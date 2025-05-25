@@ -4,7 +4,9 @@ defmodule NetflixirWeb.WatchLive do
   alias Netflixir.Videos.Services.VideoService
 
   @impl true
-  def mount(%{"id" => video_id}, _session, socket) do
+  def mount(%{"id" => video_id}, session, socket) do
+    current_user = Map.get(session, "current_user")
+
     socket =
       socket
       |> assign_new(:video, fn ->
@@ -13,6 +15,7 @@ defmodule NetflixirWeb.WatchLive do
           {:error, _} -> nil
         end
       end)
+      |> assign(:current_user, current_user)
       |> assign_new(:current_quality, fn -> "auto" end)
 
     if socket.assigns.video do

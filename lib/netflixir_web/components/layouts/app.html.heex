@@ -63,7 +63,7 @@
 
 <main>
   <div class="mx-auto max-w-7xl">
-    <.flash_group flash={@flash} />
+    {NetflixirWeb.FlashComponent.render(%{flash: @flash})}
     {@inner_content}
   </div>
 </main>

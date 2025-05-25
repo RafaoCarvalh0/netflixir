@@ -29,6 +29,7 @@ defmodule NetflixirWeb.Router do
 
     post "/set_jwt", SessionController, :set_jwt
     get "/logout", SessionController, :logout
+    get "/login_success", SessionController, :login_success
   end
 
   scope "/", NetflixirWeb do
