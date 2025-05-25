@@ -6,12 +6,57 @@
         <span class="text-[#4e2a8e]">ixir</span>
         <img src={~p"/images/elixir-logo.png"} alt="Elixir Logo" class="h-6 ml-1" />
       </a>
-      <.link
-        navigate={~p"/login"}
-        class="bg-[#e50914] hover:bg-[#b0060f] text-white font-bold py-2 px-4 rounded transition"
-      >
-        Sign In
-      </.link>
+      <div class="flex items-end gap-4">
+        <%= if @current_user do %>
+          <div id="user-dropdown" class="relative">
+            <button
+              id="dropdownBtn"
+              type="button"
+              class="text-white text-sm font-bold bg-[#4e2a8e] px-3 py-1 rounded flex items-center gap-2 focus:outline-none"
+              onclick="const menu = document.getElementById('dropdownMenu'); menu.classList.toggle('hidden');"
+            >
+              <span>{@current_user["username"]}</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <div
+              id="dropdownMenu"
+              class="hidden absolute right-0 mt-2 w-32 bg-black rounded shadow-lg z-50"
+              style="min-width: 8rem;"
+            >
+              <.link
+                href={~p"/logout"}
+                method="get"
+                class="block px-4 py-2 text-sm text-white hover:bg-[#222] rounded"
+              >
+                Sign Out
+              </.link>
+            </div>
+            <script>
+              document.addEventListener('click', function(event) {
+                const btn = document.getElementById('dropdownBtn');
+                const menu = document.getElementById('dropdownMenu');
+                if (!btn.contains(event.target) && !menu.contains(event.target)) {
+                  menu.classList.add('hidden');
+                }
+              });
+            </script>
+          </div>
+        <% else %>
+          <.link
+            navigate={~p"/login"}
+            class="bg-[#e50914] hover:bg-[#b0060f] text-white font-bold py-2 px-4 rounded transition"
+          >
+            Sign In
+          </.link>
+        <% end %>
+      </div>
     </div>
   </nav>
 </header>

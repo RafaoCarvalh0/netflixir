@@ -14,6 +14,7 @@ defmodule NetflixirWeb.SessionController do
   def logout(conn, _params) do
     conn
     |> delete_resp_cookie("user_token")
+    |> clear_session()
     |> put_flash(:info, "You have been logged out.")
     |> redirect(to: "/")
   end

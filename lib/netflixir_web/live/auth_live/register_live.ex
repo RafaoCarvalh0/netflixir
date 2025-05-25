@@ -2,8 +2,13 @@ defmodule NetflixirWeb.AuthLive.RegisterLive do
   use NetflixirWeb, :live_view
   alias Netflixir.Users.Services.UserService
 
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, form: to_form(%{}, as: :user))}
+  def mount(_params, session, socket) do
+    current_user = Map.get(session, "current_user")
+
+    {:ok,
+     socket
+     |> assign(:current_user, current_user)
+     |> assign(form: to_form(%{}, as: :user))}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do

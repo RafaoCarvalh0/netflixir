@@ -4,7 +4,12 @@ defmodule NetflixirWeb.HomeLive do
   alias Netflixir.Videos.Services.VideoService
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign_new(socket, :videos, fn -> VideoService.list_available_videos() end)}
+  def mount(_params, session, socket) do
+    current_user = Map.get(session, "current_user")
+
+    {:ok,
+     socket
+     |> assign(:current_user, current_user)
+     |> assign(:videos, VideoService.list_available_videos())}
   end
 end
