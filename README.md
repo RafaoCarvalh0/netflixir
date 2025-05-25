@@ -46,7 +46,7 @@ The frontend implementation was largely assisted by AI, with code design decisio
 ### Backend Architecture (Text Diagram)
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[LiveView/Controller] --> B[Service Layer]
     B --> C[Store Layer]
     C --> B
