@@ -1,4 +1,4 @@
-defmodule Netflixir.Auth.Token do
+defmodule NetflixirWeb.Auth.Token do
   use Joken.Config
 
   @spec token_config() :: Joken.config()

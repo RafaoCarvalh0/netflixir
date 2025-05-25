@@ -1,6 +1,6 @@
-defmodule Netflixir.Auth.AuthService do
+defmodule NetflixirWeb.Auth do
   alias Netflixir.Users.Services.UserService
-  alias Netflixir.Auth.Token
+  alias NetflixirWeb.Auth.Token
 
   @spec authenticate_user(%{login: String.t(), password: String.t()}) ::
           {:ok, %{user: map(), token: String.t()}} | {:error, :not_found | :invalid_password}
