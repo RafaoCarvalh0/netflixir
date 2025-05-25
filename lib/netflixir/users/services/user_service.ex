@@ -12,29 +12,28 @@ defmodule Netflixir.Users.Services.UserService do
     end
   end
 
-  @spec login_user(UserInputs.login_user_input()) ::
-          {:ok, UserExternal.t()} | {:error, :not_found | :invalid_password}
-  def login_user(%{username: username, password: password}) when is_binary(username) do
+  @spec get_user_by_username(String.t()) :: {:ok, UserExternal.t()} | {:error, :not_found}
+  def get_user_by_username(username) when is_binary(username) do
     case UserStore.get_user_by_username(username) do
       nil -> {:error, :not_found}
-      user -> check_password(user, password)
+      user -> {:ok, UserExternal.from_db(user)}
     end
   end
 
-  def login_user(%{email: email, password: password}) when is_binary(email) do
+  @spec get_user_by_email(String.t()) :: {:ok, UserExternal.t()} | {:error, :not_found}
+  def get_user_by_email(email) when is_binary(email) do
     case UserStore.get_user_by_email(email) do
       nil -> {:error, :not_found}
-      user -> check_password(user, password)
+      user -> {:ok, UserExternal.from_db(user)}
     end
   end
 
-  def login_user(_), do: {:error, :not_found}
-
-  defp check_password(user, password) do
-    if Bcrypt.verify_pass(password, user.password_hash) do
-      {:ok, UserExternal.from_db(user)}
-    else
-      {:error, :invalid_password}
+  @spec get_password_hash_by_user_id(non_neg_integer()) ::
+          {:ok, String.t()} | {:error, :hash_not_found}
+  def get_password_hash_by_user_id(id) do
+    case UserStore.get_user_by_id(id) do
+      user when is_binary(user.password_hash) -> {:ok, user.password_hash}
+      _ -> {:error, :hash_not_found}
     end
   end
 end

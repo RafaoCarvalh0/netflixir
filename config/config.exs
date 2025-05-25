@@ -130,3 +130,6 @@ config :netflixir, :videos,
 
 config :netflixir, Netflixir.Repo,
   migration_timestamps: [inserted_at: :created_at, updated_at: :updated_at]
+
+config :joken,
+  default_signer: System.get_env("JWT_SECRET")

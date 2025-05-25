@@ -16,4 +16,7 @@ defmodule Netflixir.Users.Stores.UserStore do
 
   @spec get_user_by_username(String.t()) :: User.t() | nil
   def get_user_by_username(username), do: Repo.get_by(User, username: username)
+
+  @spec get_user_by_id(integer()) :: User.t() | nil
+  def get_user_by_id(id), do: Repo.get(User, id)
 end

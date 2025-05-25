@@ -30,6 +30,7 @@ defmodule Netflixir.Users.Externals.UserExternalTest do
         |> Jason.decode!()
 
       expected = %{
+        "id" => nil,
         "name" => user.name,
         "email" => user.email,
         "username" => user.username,
@@ -38,6 +39,44 @@ defmodule Netflixir.Users.Externals.UserExternalTest do
       }
 
       assert json == expected
+    end
+
+    test "converts attrs map to UserExternal struct with id" do
+      attrs = %{
+        id: 123,
+        name: "Test User",
+        email: "test@example.com",
+        username: "testuser",
+        created_at: ~N[2024-06-01 12:00:00],
+        updated_at: ~N[2024-06-01 12:00:00]
+      }
+
+      user = UserExternal.from_db(attrs)
+      assert user.id == 123
+      assert user.name == "Test User"
+      assert user.email == "test@example.com"
+      assert user.username == "testuser"
+      assert user.created_at == ~N[2024-06-01 12:00:00]
+      assert user.updated_at == ~N[2024-06-01 12:00:00]
+    end
+
+    test "serializes struct to JSON including id" do
+      user = %UserExternal{
+        id: 42,
+        name: "Alice",
+        email: "alice@email.com",
+        username: "alice",
+        created_at: ~N[2024-06-01 10:00:00],
+        updated_at: ~N[2024-06-01 10:00:00]
+      }
+
+      json = Jason.encode!(user) |> Jason.decode!()
+      assert json["id"] == 42
+      assert json["name"] == "Alice"
+      assert json["email"] == "alice@email.com"
+      assert json["username"] == "alice"
+      assert json["created_at"] == "2024-06-01T10:00:00"
+      assert json["updated_at"] == "2024-06-01T10:00:00"
     end
   end
 end

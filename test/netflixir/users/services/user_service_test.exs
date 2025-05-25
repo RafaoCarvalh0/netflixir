@@ -11,6 +11,7 @@ defmodule Netflixir.Users.Services.UserServiceTest do
       assert {:ok, %UserExternal{} = user_external} = UserService.register_user(attrs)
 
       assert user_external == %UserExternal{
+               id: user_external.id,
                name: attrs.name,
                email: attrs.email,
                username: attrs.username,
@@ -30,47 +31,34 @@ defmodule Netflixir.Users.Services.UserServiceTest do
     end
   end
 
-  describe "login_user/1" do
-    test "authenticates with correct username and password" do
-      user = insert(:user, password: "mypassword")
+  describe "get_user_by_username/1" do
+    test "returns user when username exists" do
+      user = insert(:user)
 
       assert {:ok, %UserExternal{} = user_external} =
-               UserService.login_user(%{username: user.username, password: "mypassword"})
+               UserService.get_user_by_username(user.username)
 
-      assert user_external == %UserExternal{
-               name: user.name,
-               email: user.email,
-               username: user.username,
-               created_at: user_external.created_at,
-               updated_at: user_external.updated_at
-             }
+      assert user_external.username == user.username
+      assert user_external.email == user.email
+      assert user_external.id == user.id
     end
 
-    test "authenticates with correct email and password" do
-      user = insert(:user, password: "mypassword")
+    test "returns error when username does not exist" do
+      assert {:error, :not_found} = UserService.get_user_by_username("nonexistent")
+    end
+  end
 
-      assert {:ok, %UserExternal{} = user_external} =
-               UserService.login_user(%{email: user.email, password: "mypassword"})
-
-      assert user_external == %UserExternal{
-               name: user.name,
-               email: user.email,
-               username: user.username,
-               created_at: user_external.created_at,
-               updated_at: user_external.updated_at
-             }
+  describe "get_user_by_email/1" do
+    test "returns user when email exists" do
+      user = insert(:user)
+      assert {:ok, %UserExternal{} = user_external} = UserService.get_user_by_email(user.email)
+      assert user_external.email == user.email
+      assert user_external.username == user.username
+      assert user_external.id == user.id
     end
 
-    test "returns error if user does not exist" do
-      assert {:error, :not_found} =
-               UserService.login_user(%{username: "nonexistent", password: "123"})
-    end
-
-    test "returns error if password is incorrect" do
-      user = insert(:user, password: "mypassword")
-
-      assert {:error, :invalid_password} =
-               UserService.login_user(%{username: user.username, password: "wrongpass"})
+    test "returns error when email does not exist" do
+      assert {:error, :not_found} = UserService.get_user_by_email("notfound@email.com")
     end
   end
 end

@@ -57,3 +57,6 @@ config :netflixir, :video_resolutions, [
     bandwidth: "800000"
   }
 ]
+
+config :joken,
+  default_signer: "test_secret_key"

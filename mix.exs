@@ -62,7 +62,8 @@ defmodule Netflixir.MixProject do
       {:cors_plug, "~> 3.0"},
       {:mox, "~> 1.1", only: :test},
       {:bcrypt_elixir, "~> 3.0"},
-      {:ex_machina, "~> 2.7", only: :test}
+      {:ex_machina, "~> 2.7", only: :test},
+      {:joken, "~> 2.5"}
     ]
   end
 
