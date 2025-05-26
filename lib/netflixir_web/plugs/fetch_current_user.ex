@@ -1,23 +1,15 @@
 defmodule NetflixirWeb.Plugs.FetchCurrentUser do
   import Plug.Conn
 
-  alias NetflixirWeb.Auth.Token
-
-  def init(default), do: default
+  def init(opts), do: opts
 
   def call(conn, _opts) do
-    case fetch_cookies(conn) do
-      %{cookies: %{"user_token" => token}} ->
-        case Token.verify_token(token) do
-          {:ok, user} ->
-            put_session(conn, :current_user, user)
+    case get_session(conn, :current_user) do
+      nil ->
+        assign(conn, :current_user, nil)
 
-          _ ->
-            conn
-        end
-
-      _ ->
-        conn
+      user ->
+        assign(conn, :current_user, user)
     end
   end
 end

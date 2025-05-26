@@ -25,9 +25,9 @@ defmodule NetflixirWeb.Router do
     live "/", HomeLive
     live "/watch/:id", WatchLive
     live "/register", AuthLive.RegisterLive
-    live "/login", AuthLive.LoginLive
 
-    post "/set_jwt", SessionController, :set_jwt
+    get "/login", SessionController, :new
+    post "/login", SessionController, :create
     get "/logout", SessionController, :logout
     get "/login_success", SessionController, :login_success
   end

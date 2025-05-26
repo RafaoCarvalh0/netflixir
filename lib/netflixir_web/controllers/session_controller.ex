@@ -1,21 +1,34 @@
 defmodule NetflixirWeb.SessionController do
   use NetflixirWeb, :controller
 
-  def set_jwt(conn, %{"token" => token}) do
-    conn
-    |> put_resp_cookie("user_token", token,
-      http_only: false,
-      secure: true,
-      max_age: 60 * 60 * 24 * 7
-    )
-    |> redirect(to: "/")
+  alias NetflixirWeb.Auth
+
+  def new(conn, _params) do
+    render(conn, :login, error: nil, current_user: nil)
+  end
+
+  def create(conn, %{"user" => user_params}) do
+    case Auth.authenticate_user(user_params) do
+      {:ok, %{user: user, token: token}} ->
+        conn
+        |> put_session(:current_user, user)
+        |> put_session(:user_token, token)
+        |> redirect(to: "/")
+
+      {:error, error} when error in [:not_found, :invalid_password] ->
+        conn
+        |> put_flash(:error, "Invalid username or password")
+        |> render(:login, error: "Invalid username or password", current_user: nil)
+    end
   end
 
   def logout(conn, _params) do
     conn
-    |> delete_resp_cookie("user_token")
     |> clear_session()
-    |> put_flash(:info, "You have been logged out.")
     |> redirect(to: "/")
+  end
+
+  def login_success(conn, _params) do
+    redirect(conn, to: "/")
   end
 end

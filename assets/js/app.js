@@ -64,32 +64,3 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-window.addEventListener("phx:set-jwt-cookie", (e) => {
-  const token = e.detail.token;
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = "/set_jwt";
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "token";
-  input.value = token;
-  form.appendChild(input);
-
-  // Adiciona o CSRF token
-  const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
-  const csrfInput = document.createElement("input");
-  csrfInput.type = "hidden";
-  csrfInput.name = "_csrf_token";
-  csrfInput.value = csrfToken;
-  form.appendChild(csrfInput);
-
-  document.body.appendChild(form);
-  form.submit();
-});
-
-// Handle logout
-window.addEventListener("phx:logout", () => {
-  document.cookie = "user_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-  window.location.href = "/";
-});
-
