@@ -3,7 +3,7 @@ defmodule NetflixirWeb.Auth.Token do
 
   @spec token_config() :: Joken.config()
   def token_config do
-    one_day_in_seconds = 2 * 60 * 60
+    one_day_in_seconds = 24 * 60 * 60
 
     default_claims(
       iss: "netflixir",

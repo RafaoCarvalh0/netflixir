@@ -87,6 +87,11 @@ config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
 
+# Configure JWT for development
+config :joken,
+  default_signer:
+    System.get_env("JWT_SECRET", "dev_secret_key_for_jwt_signing_please_change_in_production")
+
 # Configure storage module for local development
 config :netflixir,
   storage_module: Netflixir.Storage.Local,

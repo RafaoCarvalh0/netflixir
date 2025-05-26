@@ -27,9 +27,9 @@ defmodule NetflixirWeb.Router do
     live "/register", AuthLive.RegisterLive
 
     get "/login", SessionController, :new
-    post "/login", SessionController, :create
     get "/logout", SessionController, :logout
-    get "/login_success", SessionController, :login_success
+
+    post "/login", SessionController, :create
   end
 
   scope "/", NetflixirWeb do

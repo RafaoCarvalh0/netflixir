@@ -27,8 +27,4 @@ defmodule NetflixirWeb.SessionController do
     |> clear_session()
     |> redirect(to: "/")
   end
-
-  def login_success(conn, _params) do
-    redirect(conn, to: "/")
-  end
 end
