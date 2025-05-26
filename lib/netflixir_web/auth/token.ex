@@ -1,14 +1,14 @@
 defmodule NetflixirWeb.Auth.Token do
   use Joken.Config
 
+  @one_day_in_seconds 24 * 60 * 60
+
   @spec token_config() :: Joken.config()
   def token_config do
-    one_day_in_seconds = 24 * 60 * 60
-
     default_claims(
       iss: "netflixir",
       aud: "netflixir",
-      default_ttl: one_day_in_seconds
+      default_ttl: @one_day_in_seconds
     )
   end
 
@@ -16,8 +16,11 @@ defmodule NetflixirWeb.Auth.Token do
           {:ok, String.t()} | {:error, any()}
   def generate_token(user) do
     extra_claims = %{
-      "user_id" => user.id,
-      "username" => user.username
+      "sub" => user.id,
+      "username" => user.username,
+      "iat" => DateTime.utc_now() |> DateTime.to_unix(),
+      "exp" =>
+        DateTime.utc_now() |> DateTime.add(@one_day_in_seconds, :second) |> DateTime.to_unix()
     }
 
     {:ok, token, _claims} = generate_and_sign(extra_claims)

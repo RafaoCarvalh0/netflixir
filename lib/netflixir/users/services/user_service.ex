@@ -28,6 +28,14 @@ defmodule Netflixir.Users.Services.UserService do
     end
   end
 
+  @spec get_user_by_id(integer()) :: {:ok, UserExternal.t()} | {:error, :not_found}
+  def get_user_by_id(id) do
+    case UserStore.get_user_by_id(id) do
+      nil -> {:error, :not_found}
+      user -> {:ok, UserExternal.from_db(user)}
+    end
+  end
+
   @spec get_password_hash_by_user_id(non_neg_integer()) ::
           {:ok, String.t()} | {:error, :hash_not_found}
   def get_password_hash_by_user_id(id) do
