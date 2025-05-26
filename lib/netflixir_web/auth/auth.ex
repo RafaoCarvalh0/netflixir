@@ -1,6 +1,5 @@
 defmodule NetflixirWeb.Auth do
   alias Netflixir.Users.Services.UserService
-  alias NetflixirWeb.Auth.Token
 
   @spec authenticate_user(%{login: String.t(), password: String.t()}) ::
           {:ok, %{user: map(), token: String.t()}} | {:error, :not_found | :invalid_password}
@@ -8,9 +7,8 @@ defmodule NetflixirWeb.Auth do
       when is_binary(login) and is_binary(password) do
     with {:ok, user} <- get_user_by_login(login),
          {:ok, user_password_hash} <- UserService.get_password_hash_by_user_id(user.id),
-         {:ok, :success} <- verify_password(password, user_password_hash),
-         {:ok, token} <- Token.generate_token(user) do
-      {:ok, %{user: user, token: token}}
+         {:ok, :success} <- verify_password(password, user_password_hash) do
+      {:ok, %{user: user}}
     end
   end
 

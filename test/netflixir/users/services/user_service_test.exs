@@ -52,13 +52,39 @@ defmodule Netflixir.Users.Services.UserServiceTest do
     test "returns user when email exists" do
       user = insert(:user)
       assert {:ok, %UserExternal{} = user_external} = UserService.get_user_by_email(user.email)
-      assert user_external.email == user.email
-      assert user_external.username == user.username
-      assert user_external.id == user.id
+
+      assert user_external == %UserExternal{
+               id: user.id,
+               name: user.name,
+               email: user.email,
+               username: user.username,
+               created_at: user_external.created_at,
+               updated_at: user_external.updated_at
+             }
     end
 
     test "returns error when email does not exist" do
       assert {:error, :not_found} = UserService.get_user_by_email("notfound@email.com")
+    end
+  end
+
+  describe "get_user_by_id/1" do
+    test "returns user when id exists" do
+      user = insert(:user)
+      assert {:ok, %UserExternal{} = user_external} = UserService.get_user_by_id(user.id)
+
+      assert user_external == %UserExternal{
+               id: user.id,
+               name: user.name,
+               email: user.email,
+               username: user.username,
+               created_at: user_external.created_at,
+               updated_at: user_external.updated_at
+             }
+    end
+
+    test "returns error when id does not exist" do
+      assert {:error, :not_found} = UserService.get_user_by_id(-123)
     end
   end
 end

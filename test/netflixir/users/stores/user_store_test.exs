@@ -49,4 +49,19 @@ defmodule Netflixir.Users.Stores.UserStoreTest do
       assert UserStore.get_user_by_username("notfounduser") == nil
     end
   end
+
+  describe "get_user_by_id/1" do
+    test "returns user when id exists" do
+      user = insert(:user)
+      assert %User{} = found = UserStore.get_user_by_id(user.id)
+      assert found.id == user.id
+      assert found.email == user.email
+      assert found.username == user.username
+      assert found.name == user.name
+    end
+
+    test "returns nil when id does not exist" do
+      assert UserStore.get_user_by_id(-123) == nil
+    end
+  end
 end

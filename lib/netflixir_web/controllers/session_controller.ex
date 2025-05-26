@@ -9,10 +9,9 @@ defmodule NetflixirWeb.SessionController do
 
   def create(conn, %{"user" => user_params}) do
     case Auth.authenticate_user(user_params) do
-      {:ok, %{user: user, token: token}} ->
+      {:ok, %{user: user}} ->
         conn
         |> put_session(:current_user, user)
-        |> put_session(:user_token, token)
         |> redirect(to: "/")
 
       {:error, error} when error in [:not_found, :invalid_password] ->
