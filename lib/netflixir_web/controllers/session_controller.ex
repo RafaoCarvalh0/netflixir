@@ -2,18 +2,20 @@ defmodule NetflixirWeb.SessionController do
   use NetflixirWeb, :controller
 
   alias NetflixirWeb.Auth
+  alias NetflixirWeb.Auth.Token
 
   def new(conn, _params) do
     render(conn, :login, error: nil, current_user: nil)
   end
 
   def create(conn, %{"user" => user_params}) do
-    case Auth.authenticate_user(user_params) do
-      {:ok, %{user: user}} ->
-        conn
-        |> put_session(:current_user, user)
-        |> redirect(to: "/")
-
+    with {:ok, user} <- Auth.authenticate_user(user_params),
+         {:ok, token} <- Token.generate_token(user) do
+      conn
+      |> put_session(:current_user, user)
+      |> put_session(:user_token, token)
+      |> redirect(to: "/")
+    else
       {:error, error} when error in [:not_found, :invalid_password] ->
         conn
         |> put_flash(:error, "Invalid username or password")

@@ -8,6 +8,9 @@
       </a>
       <div class="flex items-end gap-4">
         <%= if @current_user do %>
+          <.link navigate={~p"/submit_video"} class="text-white hover:text-[#e50914] transition">
+            Submit your video
+          </.link>
           <div id="user-dropdown" class="relative">
             <button
               id="dropdownBtn"

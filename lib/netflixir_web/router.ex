@@ -35,6 +35,6 @@ defmodule NetflixirWeb.Router do
   scope "/", NetflixirWeb do
     pipe_through [:browser, :auth]
 
-    live "/hello", HelloLive
+    live "/submit_video", SubmitVideoLive
   end
 end

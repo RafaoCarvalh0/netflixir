@@ -8,7 +8,7 @@ defmodule NetflixirWeb.Auth do
     with {:ok, user} <- get_user_by_login(login),
          {:ok, user_password_hash} <- UserService.get_password_hash_by_user_id(user.id),
          {:ok, :success} <- verify_password(password, user_password_hash) do
-      {:ok, %{user: user}}
+      {:ok, user}
     end
   end
 

@@ -12,7 +12,7 @@ defmodule NetflixirWeb.AuthLive.RegisterLive do
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
-    case UserService.register_user(user_params) |> dbg() do
+    case UserService.register_user(user_params) do
       {:ok, _user} ->
         {:noreply,
          socket
