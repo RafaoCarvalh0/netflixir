@@ -75,7 +75,7 @@ defmodule Netflixir.Storage.ExAws do
   end
 
   @impl true
-  def upload(local_path, path, cacheable? \\ true) do
+  def upload(local_path_or_binary, path, cacheable? \\ true) do
     cache_for_one_week = "public, max-age=604800"
 
     headers =
@@ -85,9 +85,29 @@ defmodule Netflixir.Storage.ExAws do
         []
       end
 
-    local_path
+    local_path_or_binary
     |> ExAws.S3.Upload.stream_file()
     |> ExAws.S3.upload(Netflixir.Storage.storage_bucket(), path, headers: headers)
+    |> ExAws.request()
+    |> case do
+      {:ok, _} -> {:ok, "#{bucket_url()}/#{path}"}
+      error -> error
+    end
+  end
+
+  @impl true
+  def upload_binary(local_path_or_binary, path, cacheable? \\ true) do
+    cache_for_one_week = "public, max-age=604800"
+
+    headers =
+      if cacheable? do
+        [{"cache-control", cache_for_one_week}]
+      else
+        []
+      end
+
+    Netflixir.Storage.storage_bucket()
+    |> ExAws.S3.put_object(path, local_path_or_binary, headers: headers)
     |> ExAws.request()
     |> case do
       {:ok, _} -> {:ok, "#{bucket_url()}/#{path}"}

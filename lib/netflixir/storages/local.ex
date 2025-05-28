@@ -107,4 +107,23 @@ defmodule Netflixir.Storage.Local do
       {:error, :not_found}
     end
   end
+
+  @impl true
+  def upload_binary(local_path_or_binary, path, _cacheable? \\ true) do
+    File.mkdir_p!(Path.dirname(path))
+
+    case local_path_or_binary do
+      binary when is_binary(binary) ->
+        File.write!(path, binary)
+        {:ok, "file://#{Path.expand(path)}"}
+
+      file_path when is_binary(file_path) ->
+        if File.exists?(file_path) do
+          File.cp!(file_path, path)
+          {:ok, "file://#{Path.expand(path)}"}
+        else
+          {:error, :not_found}
+        end
+    end
+  end
 end

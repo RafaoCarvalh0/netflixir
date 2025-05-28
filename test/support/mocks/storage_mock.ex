@@ -40,4 +40,9 @@ defmodule Netflixir.Storage.DefaultMock do
   def upload(_local_path, path, _cacheable? \\ true) do
     {:ok, "https://test.storage.com/test-bucket/#{path}"}
   end
+
+  @impl true
+  def upload_binary(_local_path_or_binary, path, _cacheable? \\ true) do
+    {:ok, "https://test.storage.com/test-bucket/#{path}"}
+  end
 end

@@ -2,6 +2,9 @@ defmodule Netflixir.Users.Services.UserService do
   alias Netflixir.Users.Stores.UserStore
   alias Netflixir.Users.Externals.UserExternal
   alias Netflixir.Users.Inputs.UserInputs
+  alias Netflixir.Videos.Services.VideoService
+
+  @max_videos_per_user 5
 
   @spec register_user(UserInputs.register_user_input()) ::
           {:ok, UserExternal.t()} | {:error, Ecto.Changeset.t()}
@@ -43,5 +46,12 @@ defmodule Netflixir.Users.Services.UserService do
       user when is_binary(user.password_hash) -> {:ok, user.password_hash}
       _ -> {:error, :hash_not_found}
     end
+  end
+
+  @spec user_reached_video_upload_limit?(String.t()) :: boolean()
+  def user_reached_video_upload_limit?(username) do
+    username
+    |> VideoService.list_submitted_videos_names_from_user()
+    |> length() >= @max_videos_per_user
   end
 end

@@ -47,8 +47,21 @@ defmodule Netflixir.Videos.Stores.VideoStore do
     end
   end
 
-  defp video_map(video_id) do
-    directory = "#{processed_videos_prefix()}#{video_id}/"
+  @spec fetch_user_videos_directories_by_username(String.t()) :: [String.t()]
+  def fetch_user_videos_directories_by_username(username) do
+    submitted_prefix = "submitted_videos/#{username}/"
+
+    case Storage.list_directories(submitted_prefix) do
+      {:ok, directories} ->
+        directories
+
+      _ ->
+        []
+    end
+  end
+
+  defp video_map(video_id, base_prefix \\ processed_videos_prefix()) do
+    directory = "#{base_prefix}#{video_id}/"
     thumbnail_key = "thumbnails/#{video_id}.webp"
     playlist_key = "#{directory}hls/master.m3u8"
 

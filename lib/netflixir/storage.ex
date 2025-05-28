@@ -32,6 +32,9 @@ defmodule Netflixir.Storage do
   @callback upload(local_path :: path(), path(), cacheable? :: boolean()) ::
               {:ok, String.t()} | {:error, term()}
 
+  @callback upload_binary(local_path_or_binary :: binary(), path(), cacheable? :: boolean()) ::
+              {:ok, String.t()} | {:error, term()}
+
   def list_directories(prefix), do: module().list_directories(prefix)
 
   def list_files(path), do: module().list_files(path)
@@ -45,6 +48,9 @@ defmodule Netflixir.Storage do
 
   def upload(local_path, path, cacheable? \\ true),
     do: module().upload(local_path, path, cacheable?)
+
+  def upload_binary(local_path_or_binary, path, cacheable? \\ true),
+    do: module().upload_binary(local_path_or_binary, path, cacheable?)
 
   defp module do
     Application.get_env(:netflixir, :storage_module)
