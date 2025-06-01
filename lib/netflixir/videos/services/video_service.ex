@@ -4,12 +4,15 @@ defmodule Netflixir.Videos.Services.VideoService do
   alias Netflixir.Videos.Stores.VideoStore
   alias Netflixir.Videos.Processors.ThumbnailProcessor
   alias Netflixir.Users.Services.UserService
+  alias Netflixir.EventRegister
+  alias Timex
 
   @submitted_videos_prefix "submitted_videos"
   # 50MB in bytes (for 1-minute videos)
   @max_video_size 50 * 1024 * 1024
   # 2MB in bytes
   @max_thumbnail_size 2 * 1024 * 1024
+  @video_upload_event_type :video_upload
 
   @spec list_available_videos() :: [VideoExternal.t()]
   def list_available_videos do
@@ -49,7 +52,9 @@ defmodule Netflixir.Videos.Services.VideoService do
         file_name,
         username
       ) do
-    with {:ok, :valid} <- validate_user_can_upload_more_videos(username),
+    with {:ok, user} <- UserService.get_user_by_username(username),
+         {:ok, :valid} <- validate_daily_upload(user),
+         {:ok, :valid} <- validate_user_can_upload_more_videos(username),
          {:ok, :valid} <- validate_video_and_thumbnail(video_binary, thumbnail_binary),
          {:ok, sanitized_name} <- generate_filename(file_name),
          {:ok, video_storage_path} <- generate_video_storage_path(username, sanitized_name),
@@ -58,9 +63,30 @@ defmodule Netflixir.Videos.Services.VideoService do
          {:ok, thumbnail_binary} <- ThumbnailProcessor.thumbnail_from_binary(thumbnail_binary),
          {:ok, _video_url} <- Storage.upload_binary(video_binary, video_storage_path, false),
          {:ok, _thumbnail_url} <- Storage.upload_binary(thumbnail_binary, thumbnail_storage_path) do
+      EventRegister.register_event(user.id, @video_upload_event_type)
+
       {:ok, :success}
     else
       {:error, reason} -> {:error, "Failed to upload video and thumbnail: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_daily_upload(user) do
+    now = Timex.now()
+    start_of_day = Timex.beginning_of_day(now)
+    end_of_day = Timex.end_of_day(now)
+    max_videos_per_day = 5
+
+    case EventRegister.get_events_between_dates(user.id, start_of_day, end_of_day) do
+      events ->
+        video_uploads =
+          Enum.filter(events, fn {type, _timestamp} -> type == @video_upload_event_type end)
+
+        if length(video_uploads) < max_videos_per_day do
+          {:ok, :valid}
+        else
+          {:error, "User has reached the maximum number of uploads allowed per day"}
+        end
     end
   end
 

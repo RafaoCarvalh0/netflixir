@@ -12,6 +12,8 @@ defmodule Netflixir.Application do
       Netflixir.Repo,
       {DNSCluster, query: Application.get_env(:netflixir, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Netflixir.PubSub},
+      # Start the EventRegister GenServer
+      Netflixir.EventRegister,
       # Start a worker by calling: Netflixir.Worker.start_link(arg)
       # {Netflixir.Worker, arg},
       # Start to serve requests, typically the last entry

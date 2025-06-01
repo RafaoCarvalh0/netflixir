@@ -63,7 +63,8 @@ defmodule Netflixir.MixProject do
       {:mox, "~> 1.1", only: :test},
       {:bcrypt_elixir, "~> 3.0"},
       {:ex_machina, "~> 2.7", only: :test},
-      {:joken, "~> 2.5"}
+      {:joken, "~> 2.5"},
+      {:timex, "~> 3.7"}
     ]
   end
 

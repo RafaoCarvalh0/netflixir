@@ -42,7 +42,7 @@ let Hooks = {
         setTimeout(() => {
           this.el.style.display = "none";
         }, 700);
-      }, 2000);
+      }, 2500);
     }
   }
 }
