@@ -84,7 +84,7 @@ defmodule Netflixir.Videos.Processors.ThumbnailProcessor do
   defp is_jpeg_or_jpg?(_), do: false
 
   defp validate_image_dimensions(image_path) do
-    cmd = [
+    dimension_check_args = [
       "-v",
       "error",
       "-select_streams",
@@ -96,7 +96,7 @@ defmodule Netflixir.Videos.Processors.ThumbnailProcessor do
       image_path
     ]
 
-    case get_image_dimensions(cmd) do
+    case get_image_dimensions(dimension_check_args) do
       {:ok, width, height} when width >= @min_image_width and height >= @min_image_height ->
         {:ok, :valid}
 
@@ -109,15 +109,26 @@ defmodule Netflixir.Videos.Processors.ThumbnailProcessor do
     end
   end
 
-  defp get_image_dimensions(cmd) do
-    with {dimensions, 0} <- System.cmd("ffprobe", cmd, stderr_to_stdout: true),
-         [w, h] <- String.split(String.trim(dimensions), "x"),
-         {width, ""} <- Integer.parse(w),
-         {height, ""} <- Integer.parse(h) do
-      {:ok, width, height}
-    else
-      {output, _} -> {:error, "Could not determine image dimensions: #{inspect(output)}"}
-      _ -> {:error, "Could not parse image dimensions"}
+  defp get_image_dimensions(dimension_check_args) do
+    case System.cmd("ffprobe", dimension_check_args, stderr_to_stdout: true) do
+      {dimensions, 0} ->
+        dimension_string_separator = "x"
+
+        [width_string, height_string] =
+          dimensions
+          |> String.trim()
+          |> String.split(dimension_string_separator)
+
+        {width, ""} = Integer.parse(width_string)
+        {height, ""} = Integer.parse(height_string)
+
+        {:ok, width, height}
+
+      {output, _} ->
+        {:error, "Could not determine image dimensions: #{inspect(output)}"}
+
+      _ ->
+        {:error, "Could not parse image dimensions"}
     end
   end
 end
