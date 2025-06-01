@@ -13,7 +13,7 @@ defmodule NetflixirWeb.SubmitVideoLive do
 
     {:ok,
      socket
-     |> assign(current_user: current_user, flash_message: nil)
+     |> assign(current_user: current_user, flash_message: nil, video_name: "")
      |> allow_upload(:video,
        accept: @allowed_video_extensions,
        max_file_size: @max_video_size_in_bytes
@@ -24,8 +24,8 @@ defmodule NetflixirWeb.SubmitVideoLive do
      )}
   end
 
-  def handle_event("validate", _params, socket) do
-    {:noreply, socket}
+  def handle_event("validate", %{"video_name" => video_name}, socket) do
+    {:noreply, assign(socket, :video_name, video_name)}
   end
 
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
