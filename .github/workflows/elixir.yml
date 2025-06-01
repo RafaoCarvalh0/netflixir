@@ -12,7 +12,7 @@ on:
     branches: [ "master" ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -52,4 +52,22 @@ jobs:
     - name: Install dependencies
       run: mix deps.get
     - name: Run tests
+      id: test
       run: mix test
+    - name: Generate Badges
+      if: github.ref == 'refs/heads/master'
+      run: |
+        mkdir -p badges
+        echo "Generating badges..."
+        # Build badge
+        curl -o badges/build.svg "https://img.shields.io/badge/build-${{ job.status }}-${{ job.status == 'success' && 'darkgreen' || 'red' }}"
+        # Tests badge
+        curl -o badges/tests.svg "https://img.shields.io/badge/tests-${{ steps.test.outcome }}-${{ steps.test.outcome == 'success' && 'darkgreen' || 'red' }}"
+    - name: Commit Badges
+      if: github.ref == 'refs/heads/master'
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'github-actions@github.com'
+        git add badges/
+        git commit -m "Update status badges" || exit 0
+        git push

@@ -2,7 +2,7 @@
 
 A personal study project that implements video streaming techniques similar to Netflix, built with Elixir and Phoenix LiveView.
 
-[![Build](https://img.shields.io/badge/build-passing-darkgreen)](https://github.com/rafa1/netflixir) [![Tests](https://img.shields.io/badge/tests-passing-darkgreen)](https://github.com/rafa1/netflixir)
+[![Build](https://raw.githubusercontent.com/rafa1/netflixir/master/badges/build.svg)](https://github.com/rafa1/netflixir/actions) [![Tests](https://raw.githubusercontent.com/rafa1/netflixir/master/badges/tests.svg)](https://github.com/rafa1/netflixir/actions)
 
 ---
 
