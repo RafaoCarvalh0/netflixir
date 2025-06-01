@@ -2,7 +2,7 @@
 
 A personal study project that implements video streaming techniques similar to Netflix, built with Elixir and Phoenix LiveView.
 
-[![Build & Tests](https://github.com/rafa1/netflixir/actions/workflows/elixir.yml/badge.svg)](https://github.com/rafa1/netflixir/actions/workflows/elixir.yml)
+[![Build & Tests](https://github.com/RafaoCarvalh0/netflixir/actions/workflows/elixir.yml/badge.svg)]
 
 ---
 
