@@ -33,6 +33,17 @@ let Hooks = {
         this.el.style.display = "none";
       }, 2000);
     }
+  },
+  AutoHideCustomFlash: {
+    mounted() {
+      setTimeout(() => {
+        this.el.style.transition = "opacity 0.7s";
+        this.el.style.opacity = "0";
+        setTimeout(() => {
+          this.el.style.display = "none";
+        }, 700);
+      }, 2000);
+    }
   }
 }
 

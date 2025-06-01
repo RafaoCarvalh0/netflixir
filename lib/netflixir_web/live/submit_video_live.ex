@@ -13,7 +13,7 @@ defmodule NetflixirWeb.SubmitVideoLive do
 
     {:ok,
      socket
-     |> assign(current_user: current_user, flash_message: nil, video_name: "")
+     |> assign(current_user: current_user, flash_message: nil, video_name: "", submitting: false)
      |> allow_upload(:video,
        accept: @allowed_video_extensions,
        max_file_size: @max_video_size_in_bytes
@@ -25,7 +25,7 @@ defmodule NetflixirWeb.SubmitVideoLive do
   end
 
   def handle_event("validate", %{"video_name" => video_name}, socket) do
-    {:noreply, assign(socket, :video_name, video_name)}
+    {:noreply, socket |> assign(:video_name, video_name) |> assign(:flash_message, nil)}
   end
 
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
@@ -33,6 +33,8 @@ defmodule NetflixirWeb.SubmitVideoLive do
   end
 
   def handle_event("save", %{"video_name" => name}, socket) do
+    socket = assign(socket, :submitting, true)
+
     video_entries =
       consume_uploaded_entries(socket, :video, fn %{path: path}, _entry ->
         {:ok, File.read!(path)}
@@ -49,24 +51,25 @@ defmodule NetflixirWeb.SubmitVideoLive do
           {:ok, :success} ->
             {:noreply,
              socket
-             |> put_flash(:info, "Video uploaded successfully!")
-             |> assign(:flash_message, %{type: :success, message: "Video uploaded successfully!"})}
+             |> assign(:flash_message, %{type: :success, message: "Video uploaded successfully!"})
+             |> assign(:video_name, "")
+             |> assign(:submitting, false)}
 
           {:error, reason} ->
             {:noreply,
              socket
-             |> put_flash(:error, reason)
-             |> assign(:flash_message, %{type: :error, message: reason})}
+             |> assign(:flash_message, %{type: :error, message: reason})
+             |> assign(:submitting, false)}
         end
 
       _ ->
         {:noreply,
          socket
-         |> put_flash(:error, "Please select both video and thumbnail files")
          |> assign(:flash_message, %{
            type: :error,
            message: "Please select both video and thumbnail files"
-         })}
+         })
+         |> assign(:submitting, false)}
     end
   end
 

@@ -85,14 +85,19 @@
 
         <button
           type="submit"
-          class="w-full bg-[#e50914] text-white py-2 px-4 rounded-md hover:bg-[#f40612] transition-colors duration-200"
+          class={"w-full bg-[#e50914] text-white py-2 px-4 rounded-md hover:bg-[#f40612] transition-colors duration-200 #{if @submitting, do: "opacity-50 cursor-not-allowed"}"}
+          disabled={@submitting}
         >
           Submit Video
         </button>
       </form>
 
       <%= if @flash_message do %>
-        <div class={"mt-4 p-4 rounded-md #{if @flash_message.type == :error, do: "bg-red-500", else: "bg-green-500"} text-white text-center"}>
+        <div
+          id="custom-flash"
+          phx-hook="AutoHideCustomFlash"
+          class={"mt-4 p-4 rounded-md #{if @flash_message.type == :error, do: "bg-red-500", else: "bg-green-500"} text-white text-center"}
+        >
           {@flash_message.message}
         </div>
       <% end %>
