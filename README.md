@@ -133,5 +133,3 @@ export B2_REGION="your-backblaze-region"
 export B2_HOST="your-backblaze-host"
 export B2_PORT="your-backblaze-port"
 ```
-
-
