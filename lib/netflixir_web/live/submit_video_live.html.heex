@@ -1,30 +1,93 @@
 <div class="min-h-screen flex items-center justify-center bg-black">
   <div class="bg-[#181818] rounded-md w-full max-w-md px-8 py-10 shadow-lg">
-    <h2 class="text-3xl font-bold text-white text-center mb-2">Under Construction</h2>
-    <p class="text-neutral-400 text-center mb-6">
-      Video upload feature will be available soon
-    </p>
+    <h2 class="text-3xl font-bold text-white text-center mb-6">Submit Video</h2>
 
-    <div class="space-y-5">
-      <div class="text-center">
-        <img
-          src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWJ1N2djbTVqeTEzM2Q4ZW8wdGE2M2sxNmRua2x2a250bm5vbXBwYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fVeAI9dyD5ssIFyOyM/giphy.gif"
-          alt="Under Construction"
-          class="mx-auto rounded-lg shadow-lg"
+    <form id="upload-form" phx-submit="save" phx-change="validate" class="space-y-6">
+      <div>
+        <label for="video_name" class="block text-sm font-medium text-neutral-300 mb-2">
+          Video Title (max 25 characters)
+        </label>
+        <input
+          type="text"
+          name="video_name"
+          id="video_name"
+          required
+          maxlength="25"
+          class="w-full px-4 py-2 bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#e50914]"
+          placeholder="Enter video title"
         />
       </div>
 
-      <div class="text-center">
-        <p class="text-neutral-300">
-          Soon you will be able to submit your favorite videos, and...
-        </p>
-        <p class="text-[#e50914] text-3xl font-bold">
-          MAYBE
-        </p>
-        <p class="text-neutral-300">
-          ...they will be selected to be featured on the site.
+      <div>
+        <label for="video_file" class="block text-sm font-medium text-neutral-300 mb-2">
+          Video File (MP4, max 50MB)
+        </label>
+        <div class="relative">
+          <.live_file_input
+            upload={@uploads.video}
+            class="w-full px-4 py-2 bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#e50914]"
+          />
+
+          <%= for entry <- @uploads.video.entries do %>
+            <div class="mt-2 text-sm text-neutral-300">
+              {entry.client_name} - {entry.progress}%
+              <button
+                type="button"
+                phx-click="cancel-upload"
+                phx-value-ref={entry.ref}
+                class="text-red-500 ml-2"
+              >
+                ×
+              </button>
+            </div>
+          <% end %>
+        </div>
+        <p class="mt-1 text-sm text-neutral-400">
+          Only MP4 format is accepted. Maximum file size: 50MB
         </p>
       </div>
-    </div>
+
+      <div>
+        <label for="thumbnail" class="block text-sm font-medium text-neutral-300 mb-2">
+          Thumbnail (JPG/PNG, max 2MB)
+        </label>
+        <div class="relative">
+          <.live_file_input
+            upload={@uploads.thumbnail}
+            class="w-full px-4 py-2 bg-[#333] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#e50914]"
+          />
+
+          <%= for entry <- @uploads.thumbnail.entries do %>
+            <div class="mt-2 text-sm text-neutral-300">
+              {entry.client_name} - {entry.progress}%
+              <button
+                type="button"
+                phx-click="cancel-upload"
+                phx-value-ref={entry.ref}
+                class="text-red-500 ml-2"
+              >
+                ×
+              </button>
+            </div>
+          <% end %>
+        </div>
+        <p class="mt-1 text-sm text-neutral-400">
+          Accepted formats: JPG, PNG. Maximum file size: 2MB
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-[#e50914] text-white py-2 px-4 rounded-md hover:bg-[#f40612] transition-colors duration-200"
+      >
+        Submit Video
+      </button>
+    </form>
+
+    <%= if @flash_message do %>
+      <div class={"mt-4 p-4 rounded-md #{if @flash_message.type == :error, do: "bg-red-500", else: "bg-green-500"} text-white text-center"}>
+        {@flash_message.message}
+      </div>
+    <% end %>
   </div>
 </div>
