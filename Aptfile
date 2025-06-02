@@ -1,7 +1,2 @@
-:repo:deb http://archive.ubuntu.com/ubuntu/ jammy main
-:repo:deb http://archive.ubuntu.com/ubuntu/ jammy universe
-libwebp-dev
-libwebp6
-libwebpdemux2
-libwebpmux3
-libwebp-tools
+libav-tools
+ffmpeg
