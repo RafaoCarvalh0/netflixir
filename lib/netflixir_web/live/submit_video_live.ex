@@ -3,6 +3,8 @@ defmodule NetflixirWeb.SubmitVideoLive do
 
   alias Netflixir.Videos.Services.VideoService
 
+  require Logger
+
   @allowed_video_extensions ~w(.mp4)
   @allowed_thumbnail_extensions ~w(.jpg .jpeg .png .webp)
   @max_video_size_in_bytes 50_000_000
@@ -56,9 +58,11 @@ defmodule NetflixirWeb.SubmitVideoLive do
              |> assign(:submitting, false)}
 
           {:error, reason} ->
+            Logger.error("Error uploading video: #{inspect(reason, pretty: true)}")
+
             {:noreply,
              socket
-             |> assign(:flash_message, %{type: :error, message: reason})
+             |> assign(:flash_message, %{type: :error, message: "Error uploading video"})
              |> assign(:submitting, false)}
         end
 
