@@ -65,4 +65,5 @@ priv/static/storage/dev/resolutions/*
 
 # Ignore uploaded files.
 submitted_videos/*
+
 .env
