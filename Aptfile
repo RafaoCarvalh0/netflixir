@@ -1,9 +1,6 @@
 ffmpeg
 libpulse0
 libpulse-dev
-libpulse-mainloop-glib0
-libpulse-simple0
-libpulsecommon-16.1
 libavcodec-extra
 libavdevice-dev
 libavfilter-dev
@@ -39,6 +36,4 @@ libxcb-keysyms1-dev
 libxcb-image0-dev
 libxcb-util0-dev
 libxcb-xrm-dev
-libxcb-xtest0-dev
-pulseaudio
-pulseaudio-utils 
+libxcb-xtest0-dev 
