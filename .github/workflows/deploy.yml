@@ -19,19 +19,15 @@ jobs:
       - name: Install gigalixir CLI
         run: pip install gigalixir
 
-      - name: Login to Gigalixir
-        env:
-          GIGALIXIR_EMAIL: ${{ secrets.GIGALIXIR_EMAIL }}
-          GIGALIXIR_API_KEY: ${{ secrets.GIGALIXIR_API_KEY }}
-        run: |
-          gigalixir login --email "$GIGALIXIR_EMAIL" --api-key "$GIGALIXIR_API_KEY" --no-interactive
-
       - name: Add Gigalixir remote
         env:
+          GIGALIXIR_API_KEY: ${{ secrets.GIGALIXIR_API_KEY }}
           GIGALIXIR_APP_NAME: ${{ secrets.GIGALIXIR_APP_NAME }}
         run: |
           gigalixir git:remote $GIGALIXIR_APP_NAME
 
       - name: Push to Gigalixir
+        env:
+          GIGALIXIR_API_KEY: ${{ secrets.GIGALIXIR_API_KEY }}
         run: |
           git push gigalixir master --force 
