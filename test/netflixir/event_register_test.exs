@@ -2,11 +2,6 @@ defmodule Netflixir.EventRegisterTest do
   use ExUnit.Case, async: true
   alias Netflixir.EventRegister
 
-  setup do
-    start_supervised!(EventRegister)
-    :ok
-  end
-
   describe "register_event/2" do
     test "registers a new event for an identifier" do
       identifier = "upload_123"
