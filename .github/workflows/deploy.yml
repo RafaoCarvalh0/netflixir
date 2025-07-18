@@ -1,0 +1,37 @@
+name: Deploy to Gigalixir
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install gigalixir CLI
+        run: pip install gigalixir
+
+      - name: Login to Gigalixir
+        env:
+          GIGALIXIR_EMAIL: ${{ secrets.GIGALIXIR_EMAIL }}
+          GIGALIXIR_API_KEY: ${{ secrets.GIGALIXIR_API_KEY }}
+        run: |
+          gigalixir login --email "$GIGALIXIR_EMAIL" --api-key "$GIGALIXIR_API_KEY" --no-interactive
+
+      - name: Add Gigalixir remote
+        env:
+          GIGALIXIR_APP_NAME: ${{ secrets.GIGALIXIR_APP_NAME }}
+        run: |
+          gigalixir git:remote $GIGALIXIR_APP_NAME
+
+      - name: Push to Gigalixir
+        run: |
+          git push gigalixir master --force 
