@@ -11,5 +11,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  app:
+    build: .
+    container_name: netflixir_app
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "ecto://postgres:postgres@postgres:5432/netflixir_dev"
+      MIX_ENV: dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+    command: mix phx.server
+
 volumes:
   postgres_data:

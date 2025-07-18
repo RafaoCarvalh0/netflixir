@@ -97,39 +97,47 @@ To improve performance and user experience, a Service Worker is used to cache im
 Before you start, make sure you have the following installed on your machine:
 
 - **Elixir** and **Erlang** (recommended via [asdf](https://asdf-vm.com/) install)
-- **Docker** (for running the PostgreSQL database easily)
+- **Docker**
 - **FFmpeg** (required for video processing)
-- **PostgreSQL client** (optional, for direct database access)
+- **PostgreSQL client**
 
 ## Development Setup
 
 ### Prerequisites
-- Elixir and Erlang (recommended via `asdf install`)
-- FFmpeg (required for video processing)
-- PostgreSQL (configured but optional for current MVP)
+- Elixir and Erlang (recommended via `asdf install` for local use)
+- **OR** Docker and Docker Compose (recommended for a ready-to-use environment)
+- FFmpeg (required only for local use, already included in Docker)
+- PostgreSQL (required only for local use, already included in Docker Compose)
 
-### Local Setup
+### Using Docker (recommended)
+
+The project includes a `Dockerfile` and a `docker-compose.yml` that set up the entire environment automatically, including FFmpeg and PostgreSQL. To run the development environment:
+
 1. Clone the repository
-2. Start the server with `mix phx.server`
+2. Run:
+   ```sh
+   docker-compose up --build
+   ```
+3. Access [`localhost:4000`](http://localhost:4000)
 
-The server will be available at [`localhost:4000`](http://localhost:4000)
+You can run commands like tests and migrations inside the container:
+
+```sh
+docker-compose run --rm app mix test
+docker-compose run --rm app mix ecto.migrate
+```
+
+### Local Setup (optional)
+If you prefer to run locally, install Elixir, Erlang, FFmpeg, and PostgreSQL manually. Then start the server with:
+
+```sh
+mix phx.server
+```
 
 The project is configured to work differently in each environment:
 
 #### Development
-In development mode, the project uses local storage for videos and thumbnails. No additional configuration is needed - files will be stored in the project's storage directory.
+In development mode, the project uses local storage for videos and thumbnails. No additional configuration is needed — files will be stored in the project's storage directory.
 
 #### Testing
 The testing environment uses mocks for storage operations, making it easy to test without external dependencies.
-
-#### Production
-For production deployment, you'll need to configure the following environment variables for Backblaze B2 storage:
-
-```bash
-export STORAGE_BUCKET="your-backblaze-bucket"
-export B2_KEY_ID="your-backblaze-key-id"
-export B2_APP_KEY="your-backblaze-application-key"
-export B2_REGION="your-backblaze-region"
-export B2_HOST="your-backblaze-host"
-export B2_PORT="your-backblaze-port"
-```
