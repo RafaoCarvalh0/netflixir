@@ -21,10 +21,14 @@ jobs:
 
       - name: Add Gigalixir remote
         env:
+          GIGALIXIR_EMAIL: ${{ secrets.GIGALIXIR_EMAIL }}
           GIGALIXIR_API_KEY: ${{ secrets.GIGALIXIR_API_KEY }}
           GIGALIXIR_APP_NAME: ${{ secrets.GIGALIXIR_APP_NAME }}
         run: |
-          git remote add gigalixir https://${GIGALIXIR_API_KEY}@git.gigalixir.com/${GIGALIXIR_APP_NAME}.git
+          git remote add gigalixir https://${GIGALIXIR_EMAIL}:${GIGALIXIR_API_KEY}@git.gigalixir.com/${GIGALIXIR_APP_NAME}.git
+
+      - name: Disable git credential prompt
+        run: git config --global credential.helper ""
 
       - name: Push to Gigalixir
         run: |
